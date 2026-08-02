@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1200px;height:630px;overflow:hidden}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:#0e0e12;color:#f5f3ef;position:relative;
+    background-image:
+      radial-gradient(80% 90% at 18% -10%, rgba(255,86,56,.30), transparent 55%),
+      radial-gradient(70% 80% at 100% 10%, rgba(255,194,75,.14), transparent 55%);
+  }
+  .wrap{position:absolute;inset:0;padding:64px 72px;display:flex;flex-direction:column;justify-content:space-between}
+
+  .top{display:flex;align-items:center;gap:14px}
+  .dot{
+    width:46px;height:46px;border-radius:13px;
+    background:linear-gradient(140deg,#ff5638,#ff8a5c);
+    display:grid;place-items:center;font-size:26px;
+    box-shadow:0 6px 20px rgba(255,86,56,.45);
+  }
+  .brand{font-size:28px;font-weight:800;letter-spacing:-.02em}
+  .brand small{color:#9c99a6;font-weight:600;font-size:22px}
+
+  .mid{display:flex;flex-direction:column;gap:20px}
+  .status{
+    align-self:flex-start;display:inline-flex;align-items:center;gap:10px;
+    background:rgba(255,86,56,.16);border:1px solid rgba(255,86,56,.35);
+    color:#ff9576;font-size:22px;font-weight:700;padding:9px 20px;border-radius:30px;
+  }
+  .status i{width:11px;height:11px;border-radius:50%;background:#ff5638;display:inline-block}
+  h1{font-size:92px;line-height:.98;letter-spacing:-.03em;font-weight:850}
+  .facets{display:flex;gap:14px;margin-top:6px}
+  .facets span{
+    font-size:26px;font-weight:600;color:#f5f3ef;background:#1e1e27;
+    border:1px solid rgba(255,255,255,.10);padding:12px 22px;border-radius:30px;
+  }
+  .tag{font-size:30px;color:#c8c5d0;font-weight:500;margin-top:4px}
+  .tag b{color:#ffc24b;font-weight:700}
+
+  .bottom{display:flex;align-items:center;justify-content:space-between}
+  .handle{font-size:26px;color:#9c99a6;font-weight:600}
+  .followers{font-size:24px;color:#9c99a6}
+  .followers b{color:#f5f3ef;font-weight:800}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="dot">🎭</div>
+      <div class="brand">Cartaz <small>· live shows, one link</small></div>
+    </div>
+
+    <div class="mid">
+      <div class="status"><i></i> 2 shows this week</div>
+      <h1>Miguel Tavares</h1>
+      <div class="facets">
+        <span>🎤 Standup</span>
+        <span>🎭 Improv</span>
+        <span>🎬 Theatre</span>
+      </div>
+      <div class="tag">Every date in one place — <b>follow to never miss a show.</b></div>
+    </div>
+
+    <div class="bottom">
+      <div class="handle">cartaz.pt/migueltavares</div>
+      <div class="followers"><b>1,248</b> followers · <b>6</b> upcoming shows</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Cartaz · Miguel Tavares</title>
+<meta name="description" content="Miguel Tavares' next shows — standup, improv and theatre. Follow and get pinged about upcoming dates." />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Cartaz" />
+<meta property="og:title" content="Miguel Tavares · Cartaz" />
+<meta property="og:description" content="Standup, improv & theatre — every date in one place. Follow to never miss a show." />
+<meta property="og:url" content="https://ruicarest.github.io/cartaz/" />
+<meta property="og:image" content="https://ruicarest.github.io/cartaz/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Miguel Tavares on Cartaz — standup, improv and theatre." />
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Miguel Tavares · Cartaz" />
+<meta name="twitter:description" content="Standup, improv & theatre — every date in one place. Follow to never miss a show." />
+<meta name="twitter:image" content="https://ruicarest.github.io/cartaz/og.png" />
+<meta name="theme-color" content="#0e0e12" />
+<style>
+  :root{
+    --bg:#0e0e12;
+    --surface:#16161d;
+    --surface-2:#1e1e27;
+    --line:rgba(255,255,255,.08);
+    --line-strong:rgba(255,255,255,.14);
+    --text:#f5f3ef;
+    --muted:#9c99a6;
+    --muted-2:#6f6c79;
+    --accent:#ff5638;
+    --accent-2:#ffc24b;
+    --accent-soft:rgba(255,86,56,.14);
+    --radius:18px;
+    --radius-sm:12px;
+    --maxw:468px;
+    font-synthesis-weight:none;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    min-height:100vh;
+    /* faint spotlight backdrop */
+    background-image:
+      radial-gradient(120% 80% at 50% -10%, rgba(255,86,56,.18), transparent 55%),
+      radial-gradient(90% 60% at 90% 8%, rgba(255,194,75,.08), transparent 50%);
+    background-attachment:fixed;
+  }
+  .app{max-width:var(--maxw);margin:0 auto;padding:0 16px 96px;position:relative}
+
+  /* ---------- brand bar ---------- */
+  .brandbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 2px 10px;
+  }
+  .brand{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:-.02em;font-size:15px}
+  .brand .dot{
+    width:22px;height:22px;border-radius:7px;
+    background:linear-gradient(140deg,var(--accent),#ff8a5c);
+    display:grid;place-items:center;font-size:13px;
+    box-shadow:0 3px 10px rgba(255,86,56,.4);
+  }
+  .brand small{color:var(--muted);font-weight:500}
+  .share{
+    border:1px solid var(--line-strong);background:transparent;color:var(--text);
+    width:38px;height:38px;border-radius:11px;display:grid;place-items:center;cursor:pointer;
+    transition:background .15s,border-color .15s;
+  }
+  .share:hover{background:var(--surface-2);border-color:var(--muted-2)}
+  .share svg{width:17px;height:17px}
+
+  /* ---------- profile header ---------- */
+  .profile{text-align:center;padding:10px 8px 4px}
+  .avatar{
+    width:104px;height:104px;border-radius:50%;margin:0 auto 14px;
+    background:linear-gradient(150deg,#3a2b4d,#5a2f2a);
+    display:grid;place-items:center;font-size:40px;font-weight:700;
+    border:2px solid rgba(255,255,255,.16);
+    box-shadow:0 12px 34px rgba(0,0,0,.5);
+    position:relative;
+  }
+  .status{
+    display:inline-flex;align-items:center;gap:7px;margin-top:10px;
+    background:var(--accent-soft);border:1px solid rgba(255,86,56,.3);
+    color:#ff9576;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:20px;
+  }
+  .status .pulse{
+    width:7px;height:7px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 0 0 rgba(255,86,56,.6);animation:pulse 2s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(255,86,56,.55)}
+    70%{box-shadow:0 0 0 7px rgba(255,86,56,0)}
+    100%{box-shadow:0 0 0 0 rgba(255,86,56,0)}
+  }
+  @media (prefers-reduced-motion:reduce){ .status .pulse{animation:none} }
+  h1{font-size:24px;letter-spacing:-.02em;font-weight:800;line-height:1.1}
+  .handle{color:var(--muted);font-size:14px;margin-top:3px}
+  .facet-tags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:12px 0 6px}
+  .facet-tags span{
+    font-size:12px;color:var(--text);background:var(--surface-2);
+    border:1px solid var(--line);padding:4px 10px;border-radius:20px;
+  }
+  .bio{color:var(--muted);font-size:14px;max-width:340px;margin:10px auto 0}
+  .meta{display:flex;gap:16px;justify-content:center;margin-top:14px;color:var(--muted);font-size:13px}
+  .meta b{color:var(--text);font-weight:700}
+
+  /* ---------- follow ---------- */
+  .follow-row{display:flex;gap:10px;margin:18px 2px 6px}
+  .btn{
+    flex:1;border:none;cursor:pointer;font:inherit;font-weight:700;font-size:15px;
+    padding:13px 16px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:transform .06s ease, background .15s, border-color .15s, color .15s;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn-primary{background:var(--accent);color:#fff;box-shadow:0 8px 22px rgba(255,86,56,.32)}
+  .btn-primary.following{background:var(--surface-2);color:var(--text);border:1px solid var(--line-strong);box-shadow:none}
+  .btn-ghost{
+    flex:0 0 auto;background:var(--surface);border:1px solid var(--line-strong);color:var(--text);
+    width:52px;padding:13px 0;
+  }
+  .btn-ghost svg{width:20px;height:20px}
+  .btn svg{width:18px;height:18px}
+
+  .hint{
+    text-align:center;color:var(--muted-2);font-size:12px;margin:8px 4px 0;
+    display:flex;align-items:center;gap:6px;justify-content:center;
+  }
+  .hint svg{width:13px;height:13px;opacity:.8}
+
+  /* ---------- filter ---------- */
+  .filters{
+    display:flex;gap:8px;overflow-x:auto;padding:22px 2px 6px;scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .filters::-webkit-scrollbar{display:none}
+  .chip{
+    white-space:nowrap;cursor:pointer;font:inherit;font-size:13px;font-weight:600;
+    padding:8px 14px;border-radius:20px;border:1px solid var(--line);
+    background:transparent;color:var(--muted);transition:all .15s;
+  }
+  .chip:hover{color:var(--text);border-color:var(--line-strong)}
+  .chip.active{background:var(--text);color:#111;border-color:var(--text)}
+
+  /* ---------- section label ---------- */
+  .sec-label{
+    display:flex;align-items:center;gap:10px;margin:22px 2px 12px;
+    color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  }
+  .sec-label::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  /* ---------- event card ---------- */
+  .event{
+    display:flex;gap:14px;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:14px;margin-bottom:12px;position:relative;
+    transition:border-color .15s, transform .12s;
+  }
+  .event:hover{border-color:var(--line-strong)}
+  .event.collab{
+    border-color:rgba(255,194,75,.28);
+    background:linear-gradient(180deg,rgba(255,194,75,.06),var(--surface));
+  }
+  .datebox{
+    flex:0 0 54px;text-align:center;border-radius:var(--radius-sm);
+    background:var(--surface-2);border:1px solid var(--line);padding:9px 4px;height:fit-content;
+  }
+  .datebox .d{font-size:22px;font-weight:800;line-height:1;letter-spacing:-.02em}
+  .datebox .m{font-size:11px;color:var(--accent-2);font-weight:700;text-transform:uppercase;margin-top:3px;letter-spacing:.05em}
+  .datebox .wd{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+  .ev-body{flex:1;min-width:0}
+  .ev-kind{
+    display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+    color:var(--accent-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;
+  }
+  .ev-kind.improv{color:#7ec8ff}
+  .ev-kind.teatro{color:#c79bff}
+  .ev-title{font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.25}
+  .ev-venue{color:var(--muted);font-size:13px;margin-top:3px;display:flex;align-items:center;gap:5px}
+  .ev-venue svg{width:12px;height:12px;flex:0 0 auto;opacity:.7}
+
+  .collab-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .stack{display:flex}
+  .stack .a{
+    width:26px;height:26px;border-radius:50%;border:2px solid var(--surface);
+    margin-left:-8px;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;
+  }
+  .stack .a:first-child{margin-left:0}
+  .collab-note{font-size:12px;color:var(--accent-2);font-weight:600}
+
+  .ev-actions{display:flex;gap:8px;margin-top:12px;align-items:center}
+  .ticket{
+    flex:1;text-decoration:none;text-align:center;background:var(--accent-soft);
+    color:#ff8a6c;border:1px solid rgba(255,86,56,.3);font-weight:700;font-size:13px;
+    padding:9px 12px;border-radius:10px;transition:background .15s;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .ticket:hover{background:rgba(255,86,56,.22)}
+  .ticket svg{width:14px;height:14px}
+  .ticket.sold{background:var(--surface-2);color:var(--muted-2);border-color:var(--line);pointer-events:none}
+  .bell{
+    flex:0 0 auto;width:40px;height:38px;border-radius:10px;cursor:pointer;
+    background:var(--surface-2);border:1px solid var(--line-strong);color:var(--muted);
+    display:grid;place-items:center;transition:all .15s;
+  }
+  .bell:hover{color:var(--text)}
+  .bell svg{width:17px;height:17px}
+  .bell.on{background:var(--accent-2);color:#3a2600;border-color:var(--accent-2)}
+
+  /* ---------- past ---------- */
+  .past .event{opacity:.5}
+  .past .datebox .m{color:var(--muted)}
+
+  /* ---------- footer ---------- */
+  footer{text-align:center;margin-top:34px;color:var(--muted-2);font-size:12px;line-height:1.6}
+  footer .mk{color:var(--muted);font-weight:600}
+  footer a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line-strong)}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+    background:var(--text);color:#141414;font-weight:600;font-size:13px;
+    padding:11px 16px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.5);
+    opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:50;
+    display:flex;align-items:center;gap:8px;max-width:90vw;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast svg{width:15px;height:15px;color:var(--accent)}
+
+  .empty{text-align:center;color:var(--muted-2);font-size:14px;padding:30px 0}
+
+  @media (max-width:360px){
+    .btn{font-size:14px}
+    h1{font-size:22px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- brand -->
+  <div class="brandbar">
+    <div class="brand">
+      <span class="dot">🎭</span> Cartaz <small>&nbsp;· beta</small>
+    </div>
+    <button class="share" id="shareBtn" aria-label="Share">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+    </button>
+  </div>
+
+  <!-- profile -->
+  <section class="profile">
+    <div class="avatar">MT</div>
+    <h1>Miguel Tavares</h1>
+    <div class="handle">cartaz.pt/migueltavares</div>
+    <div class="status"><span class="pulse"></span> 2 shows this week</div>
+    <div class="facet-tags">
+      <span>🎤 Standup</span>
+      <span>🎭 Improv</span>
+      <span>🎬 Theatre</span>
+    </div>
+    <p class="bio">Comedian and improviser in Lisbon. One person, three stages — every date in one place.</p>
+    <div class="meta">
+      <span><b id="followCount">1,248</b> followers</span>
+      <span><b>6</b> upcoming shows</span>
+    </div>
+
+    <div class="follow-row">
+      <button class="btn btn-primary" id="followBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Follow</span>
+      </button>
+      <button class="btn btn-ghost" id="notifyAll" aria-label="Notify me of every show" title="Notify me of every show">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      </button>
+    </div>
+    <p class="hint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+      Follow and we'll ping you about the next show — no more stories that vanish.
+    </p>
+  </section>
+
+  <!-- filters -->
+  <div class="filters" id="filters">
+    <button class="chip active" data-f="all">All</button>
+    <button class="chip" data-f="standup">🎤 Standup</button>
+    <button class="chip" data-f="improv">🎭 Improv</button>
+    <button class="chip" data-f="teatro">🎬 Theatre</button>
+  </div>
+
+  <!-- upcoming -->
+  <div class="sec-label">Upcoming shows</div>
+  <div id="eventList"></div>
+
+  <!-- past -->
+  <div class="sec-label">Past shows</div>
+  <div class="past" id="pastList"></div>
+
+  <footer>
+    <div class="mk">🎭 Made with Cartaz</div>
+    Your next show, always up to date.<br/>
+    <a href="#" id="claimLink">Create my Cartaz →</a>
+  </footer>
+
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+  <span id="toastMsg">Done</span>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- mock data ----
+  var events = [
+    { id:"e1", day:"17", month:"Jul", wd:"Thu", kind:"standup", kindLabel:"Standup",
+      title:"Open Mic Comedy Night", venue:"Comedy Lounge · Lisbon", ticket:"live", price:"€8" },
+    { id:"e2", day:"19", month:"Jul", wd:"Sat", kind:"improv", kindLabel:"Improv · Shared event",
+      title:"The Improbables — Improv Match", venue:"Teatro do Bairro · Lisbon",
+      collab:[{i:"MT",c:"#5a2f2a"},{i:"RS",c:"#2f4a5a"},{i:"JP",c:"#4a2f5a"},{i:"+2",c:"#333"}],
+      collabNote:"Shared by 5 artists", ticket:"live", price:"€12" },
+    { id:"e3", day:"24", month:"Jul", wd:"Thu", kind:"standup", kindLabel:"Standup",
+      title:"Work in Progress — new material", venue:"Musicbox · Lisbon", ticket:"live", price:"€6" },
+    { id:"e4", day:"02", month:"Aug", wd:"Sat", kind:"teatro", kindLabel:"Theatre",
+      title:"“Family Lunch” — Premiere", venue:"Teatro Maria Matos · Lisbon", ticket:"soon" },
+    { id:"e5", day:"09", month:"Aug", wd:"Sat", kind:"improv", kindLabel:"Improv · Shared event",
+      title:"Improv by Candlelight (Porto edition)", venue:"Teatro Sá da Bandeira · Porto",
+      collab:[{i:"MT",c:"#5a2f2a"},{i:"AC",c:"#2f5a3a"},{i:"RS",c:"#2f4a5a"}],
+      collabNote:"Shared by 3 artists", ticket:"live", price:"€12" },
+    { id:"e6", day:"23", month:"Aug", wd:"Sat", kind:"standup", kindLabel:"Standup",
+      title:"Summer Special — 45 min solo", venue:"Casino Estoril · Cascais", ticket:"sold" }
+  ];
+
+  var past = [
+    { id:"p1", day:"28", month:"Jun", wd:"Sat", kind:"improv", kindLabel:"Improv",
+      title:"The Improbables — Season Finale", venue:"Teatro do Bairro · Lisbon" },
+    { id:"p2", day:"14", month:"Jun", wd:"Sat", kind:"standup", kindLabel:"Standup",
+      title:"Porto Comedy Gala", venue:"Coliseu · Porto" }
+  ];
+
+  var icons = {
+    pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+    ticket:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4Z"/><path d="M13 6v12" stroke-dasharray="2 2"/></svg>',
+    bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>'
+  };
+
+  var LS = {
+    get:function(k,d){ try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;} },
+    set:function(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
+  };
+
+  var toastEl = document.getElementById("toast");
+  var toastMsg = document.getElementById("toastMsg");
+  var toastTimer;
+  function toast(msg){
+    toastMsg.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2400);
+  }
+
+  // ---- render events ----
+  function collabHTML(ev){
+    if(!ev.collab) return "";
+    var s = ev.collab.map(function(a){
+      return '<div class="a" style="background:'+a.c+'">'+a.i+'</div>';
+    }).join("");
+    return '<div class="collab-row"><div class="stack">'+s+'</div>'+
+           '<span class="collab-note">'+ev.collabNote+'</span></div>';
+  }
+
+  function ticketHTML(ev){
+    if(ev.ticket==="soon") return '<span class="ticket sold">Tickets soon</span>';
+    if(ev.ticket==="sold") return '<span class="ticket sold">Sold out</span>';
+    return '<a class="ticket" href="#" data-noop="1">'+icons.ticket+' Tickets'+(ev.price?' · '+ev.price:'')+'</a>';
+  }
+
+  function eventHTML(ev, isPast){
+    var reminders = LS.get("reminders", {});
+    var on = reminders[ev.id] ? " on" : "";
+    var kindClass = ev.kind==="improv" ? "improv" : (ev.kind==="teatro" ? "teatro" : "");
+    return ''+
+    '<article class="event '+(ev.collab?'collab':'')+'" data-kind="'+ev.kind+'">'+
+      '<div class="datebox"><div class="d">'+ev.day+'</div><div class="m">'+ev.month+'</div><div class="wd">'+ev.wd+'</div></div>'+
+      '<div class="ev-body">'+
+        '<div class="ev-kind '+kindClass+'">'+ev.kindLabel+'</div>'+
+        '<div class="ev-title">'+ev.title+'</div>'+
+        '<div class="ev-venue">'+icons.pin+ev.venue+'</div>'+
+        collabHTML(ev)+
+        (isPast ? '' :
+          '<div class="ev-actions">'+ticketHTML(ev)+
+          '<button class="bell'+on+'" data-bell="'+ev.id+'" aria-label="Notify me">'+icons.bell+'</button></div>')+
+      '</div>'+
+    '</article>';
+  }
+
+  function renderUpcoming(filter){
+    var list = document.getElementById("eventList");
+    var f = filter||"all";
+    var shown = events.filter(function(e){ return f==="all" || e.kind===f; });
+    if(!shown.length){ list.innerHTML = '<div class="empty">No shows in this category — yet. 👀</div>'; return; }
+    list.innerHTML = shown.map(function(e){ return eventHTML(e,false); }).join("");
+    bindBells();
+  }
+
+  function renderPast(){
+    document.getElementById("pastList").innerHTML = past.map(function(e){ return eventHTML(e,true); }).join("");
+  }
+
+  function bindBells(){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-bell]"), function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.getAttribute("data-bell");
+        var reminders = LS.get("reminders", {});
+        reminders[id] = !reminders[id];
+        LS.set("reminders", reminders);
+        btn.classList.toggle("on", reminders[id]);
+        toast(reminders[id] ? "You'll be notified about this show 🔔" : "Reminder removed");
+      });
+    });
+  }
+
+  // ---- follow ----
+  var followBtn = document.getElementById("followBtn");
+  var followCount = document.getElementById("followCount");
+  var BASE = 1248;
+  function fmt(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function paintFollow(){
+    var f = LS.get("following", false);
+    followBtn.classList.toggle("following", f);
+    followBtn.querySelector("span").textContent = f ? "Following" : "Follow";
+    followCount.textContent = fmt(BASE + (f?1:0));
+  }
+  followBtn.addEventListener("click", function(){
+    var f = !LS.get("following", false);
+    LS.set("following", f);
+    paintFollow();
+    if(f) toast("Following Miguel Tavares — we'll keep you posted 🎭");
+  });
+
+  document.getElementById("notifyAll").addEventListener("click", function(){
+    var reminders = {};
+    events.forEach(function(e){ reminders[e.id]=true; });
+    LS.set("reminders", reminders);
+    if(!LS.get("following",false)){ LS.set("following", true); paintFollow(); }
+    renderUpcoming(currentFilter);
+    toast("Subscribed to all upcoming shows 🔔");
+  });
+
+  // ---- filters ----
+  var currentFilter = "all";
+  document.getElementById("filters").addEventListener("click", function(e){
+    var chip = e.target.closest(".chip");
+    if(!chip) return;
+    Array.prototype.forEach.call(this.querySelectorAll(".chip"), function(c){ c.classList.remove("active"); });
+    chip.classList.add("active");
+    currentFilter = chip.getAttribute("data-f");
+    renderUpcoming(currentFilter);
+  });
+
+  // ---- share / claim ----
+  document.getElementById("shareBtn").addEventListener("click", function(){
+    var url = "https://cartaz.pt/migueltavares";
+    if(navigator.share){ navigator.share({title:"Miguel Tavares on Cartaz", url:url}).catch(function(){}); }
+    else if(navigator.clipboard){ navigator.clipboard.writeText(url); toast("Link copied ✓"); }
+    else { toast(url); }
+  });
+  document.getElementById("claimLink").addEventListener("click", function(ev){
+    ev.preventDefault();
+    toast("Soon you'll be able to create yours 😉");
+  });
+
+  // catch demo ticket clicks
+  document.addEventListener("click", function(e){
+    var t = e.target.closest('[data-noop]');
+    if(t){ e.preventDefault(); toast("Demo — this would open ticketing 🎟️"); }
+  });
+
+  // init
+  paintFollow();
+  renderUpcoming("all");
+  renderPast();
+})();
+</script>
+</body>
+</html>
