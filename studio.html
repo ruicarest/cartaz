@@ -68,6 +68,8 @@
   .share-row .btn{flex:0 0 auto}
   .share-row a.btn{display:inline-flex;align-items:center;text-decoration:none}
   .venue-field{position:relative}
+  .links-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+  .links-grid input:last-child{grid-column:1 / -1}
   .co-search{position:relative;margin-top:6px}
   .co-results{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:12px;max-height:260px;overflow-y:auto;box-shadow:0 14px 34px rgba(0,0,0,.55)}
   .co-results[hidden]{display:none}
@@ -188,6 +190,14 @@
             <label><input type="checkbox" value="theatre" /> Theatre</label>
             <label><input type="checkbox" value="music" /> Music</label>
           </div>
+          <label>Links <span style="color:var(--muted-2);font-weight:400">— profile URL or @handle (optional)</span></label>
+          <div class="links-grid">
+            <input id="pInstagram" placeholder="Instagram" autocomplete="off" />
+            <input id="pTiktok" placeholder="TikTok" autocomplete="off" />
+            <input id="pYoutube" placeholder="YouTube" autocomplete="off" />
+            <input id="pLinkedin" placeholder="LinkedIn" autocomplete="off" />
+            <input id="pWebsite" placeholder="Website" autocomplete="off" />
+          </div>
           <div style="height:16px"></div>
           <button class="btn btn-primary" type="submit"><span>Create my page</span></button>
           <div class="msg" id="profileMsg"></div>
@@ -245,6 +255,14 @@
         <label><input type="checkbox" value="improv" /> Improv</label>
         <label><input type="checkbox" value="theatre" /> Theatre</label>
         <label><input type="checkbox" value="music" /> Music</label>
+      </div>
+      <label>Links <span style="color:var(--muted-2);font-weight:400">— profile URL or @handle</span></label>
+      <div class="links-grid">
+        <input id="eInstagram" placeholder="Instagram" autocomplete="off" />
+        <input id="eTiktok" placeholder="TikTok" autocomplete="off" />
+        <input id="eYoutube" placeholder="YouTube" autocomplete="off" />
+        <input id="eLinkedin" placeholder="LinkedIn" autocomplete="off" />
+        <input id="eWebsite" placeholder="Website" autocomplete="off" />
       </div>
       <div style="height:16px"></div>
       <div class="row">
@@ -467,6 +485,11 @@
       city: $("pCity").value.trim() || null,
       bio: $("pBio").value.trim() || null,
       avatar_url: pAvatarUrl || null,
+      instagram: $("pInstagram").value.trim() || null,
+      tiktok: $("pTiktok").value.trim() || null,
+      youtube: $("pYoutube").value.trim() || null,
+      linkedin: $("pLinkedin").value.trim() || null,
+      website: $("pWebsite").value.trim() || null,
       facets: facets
     };
     sb.from("artists").insert(row).select().single().then(function(res){
@@ -483,6 +506,8 @@
     var a=STATE.artist; if(!a) return;
     $("eName").value=a.name||""; $("eHandle").value=a.handle||"";
     $("eCity").value=a.city||""; $("eBio").value=a.bio||"";
+    $("eInstagram").value=a.instagram||""; $("eTiktok").value=a.tiktok||"";
+    $("eYoutube").value=a.youtube||""; $("eLinkedin").value=a.linkedin||""; $("eWebsite").value=a.website||"";
     var facets=a.facets||[];
     Array.prototype.forEach.call(document.querySelectorAll("#eFacets input"), function(c){ c.checked=facets.indexOf(c.value)>=0; });
     msg($("editProfileMsg"),""); show($("profileModal"));
@@ -492,7 +517,9 @@
   $("editProfileForm").addEventListener("submit", function(e){
     e.preventDefault();
     var facets=Array.prototype.slice.call(document.querySelectorAll("#eFacets input:checked")).map(function(c){return c.value;});
-    var upd={ name:$("eName").value.trim(), handle:$("eHandle").value.trim().toLowerCase(), city:$("eCity").value.trim()||null, bio:$("eBio").value.trim()||null, facets:facets };
+    var upd={ name:$("eName").value.trim(), handle:$("eHandle").value.trim().toLowerCase(), city:$("eCity").value.trim()||null, bio:$("eBio").value.trim()||null,
+      instagram:$("eInstagram").value.trim()||null, tiktok:$("eTiktok").value.trim()||null, youtube:$("eYoutube").value.trim()||null, linkedin:$("eLinkedin").value.trim()||null, website:$("eWebsite").value.trim()||null,
+      facets:facets };
     sb.from("artists").update(upd).eq("id", STATE.artist.id).select().single().then(function(res){
       if(res.error){ msg($("editProfileMsg"), res.error.code==="23505"?"That handle is taken — try another.":res.error.message,"err"); return; }
       STATE.artist=res.data;
