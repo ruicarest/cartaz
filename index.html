@@ -243,6 +243,20 @@
     border:1px solid var(--line-strong);border-radius:12px;padding:13px 14px;outline:none;
   }
   .sheet input:focus{border-color:var(--accent)}
+  .sheet textarea{
+    width:100%;font:inherit;font-size:16px;color:var(--text);background:var(--surface-2);
+    border:1px solid var(--line-strong);border-radius:12px;padding:12px 14px;outline:none;resize:vertical;min-height:80px;
+  }
+  .sheet textarea:focus{border-color:var(--accent)}
+  .btn-story{
+    display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin:14px 2px 0;
+    font:inherit;font-weight:700;font-size:14px;cursor:pointer;color:var(--text);
+    background:var(--surface);border:1px solid var(--line-strong);border-radius:13px;padding:12px 16px;
+    transition:background .15s,border-color .15s;
+  }
+  .btn-story:hover{background:var(--surface-2);border-color:var(--muted-2)}
+  .btn-story svg{width:18px;height:18px;color:var(--accent)}
+  .btn-story:active{transform:scale(.99)}
   .sheet .btn-primary{width:100%}
   .sheet-close{
     position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:9px;cursor:pointer;
@@ -257,9 +271,14 @@
 
   <div class="brandbar">
     <div class="brand"><span class="dot"><img src="logo-dark.png" alt="" /></span> Gigszio <small>&nbsp;· beta</small></div>
-    <button class="share" id="shareBtn" aria-label="Share">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
-    </button>
+    <div style="display:flex;gap:8px">
+      <a class="share" id="ownerEdit" href="studio.html" title="Edit your page" hidden aria-label="Edit your page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      </a>
+      <button class="share" id="shareBtn" aria-label="Share">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+      </button>
+    </div>
   </div>
 
   <section class="profile">
@@ -291,6 +310,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
       Follow and we'll ping you about the next show — no more stories that vanish.
     </p>
+    <button class="btn-story" id="storyBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg>
+      Share to Instagram Story
+    </button>
   </section>
 
   <div class="filters" id="filters">
@@ -310,6 +333,7 @@
     <div class="mk">🎭 Made with Gigszio</div>
     Your next show, always up to date.<br/>
     <a href="studio.html" id="claimLink">Create my Gigszio →</a>
+    <div style="margin-top:10px"><a href="#" id="suggestLink">💡 Suggest a feature</a></div>
   </footer>
 
 </div>
@@ -322,6 +346,19 @@
     <form id="emailForm">
       <input id="emailInput" type="email" inputmode="email" autocomplete="email" placeholder="your@email.com" required />
       <button class="btn btn-primary" type="submit"><span>Notify me</span></button>
+    </form>
+  </div>
+</div>
+
+<div class="modal" id="suggestModal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="suggestTitle">
+    <button class="sheet-close" id="suggestClose" aria-label="Close">✕</button>
+    <div class="sheet-title" id="suggestTitle">Suggest a feature</div>
+    <p class="sheet-sub">What would make Gigszio better? We read everything.</p>
+    <form id="suggestForm">
+      <textarea id="suggestText" rows="3" required placeholder="Your idea…"></textarea>
+      <input id="suggestEmail" type="email" placeholder="email (optional, for a reply)" />
+      <button class="btn btn-primary" type="submit"><span>Send suggestion</span></button>
     </form>
   </div>
 </div>
@@ -594,6 +631,77 @@
     else { toast(url); }
   });
   // "Create my Gigszio" navigates to the Studio (href="studio.html").
+
+  // ---------- feature suggestions ----------
+  var suggestModal=document.getElementById("suggestModal");
+  document.getElementById("suggestLink").addEventListener("click", function(e){
+    e.preventDefault(); suggestModal.classList.add("show"); suggestModal.setAttribute("aria-hidden","false");
+    setTimeout(function(){ document.getElementById("suggestText").focus(); },60);
+  });
+  function closeSuggest(){ suggestModal.classList.remove("show"); suggestModal.setAttribute("aria-hidden","true"); }
+  document.getElementById("suggestClose").addEventListener("click", closeSuggest);
+  suggestModal.addEventListener("click", function(e){ if(e.target===suggestModal) closeSuggest(); });
+  document.getElementById("suggestForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var body=document.getElementById("suggestText").value.trim(); if(!body) return;
+    var email=document.getElementById("suggestEmail").value.trim()||null;
+    sb.rpc("suggest_feature",{p_body:body,p_email:email,p_handle:HANDLE}).then(function(res){
+      if(res.error){ console.error(res.error); toast("Couldn't send — try again"); return; }
+      document.getElementById("suggestText").value=""; document.getElementById("suggestEmail").value="";
+      closeSuggest(); toast("Thanks! Suggestion sent 💡");
+    });
+  });
+
+  // ---------- share to Instagram story ----------
+  function loadImg(src){ return new Promise(function(res,rej){ var i=new Image(); i.onload=function(){res(i);}; i.onerror=rej; i.src=src; }); }
+  function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+  function clip(g,text,maxW){ var t=String(text||""); if(g.measureText(t).width<=maxW) return t; while(t.length>1 && g.measureText(t+"…").width>maxW) t=t.slice(0,-1); return t+"…"; }
+  function genStory(){
+    var W=1080,H=1920, c=document.createElement("canvas"); c.width=W;c.height=H; var g=c.getContext("2d");
+    var SANS='-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif';
+    g.fillStyle="#0e0e12"; g.fillRect(0,0,W,H);
+    var rg=g.createRadialGradient(W/2,-150,60,W/2,-150,1400); rg.addColorStop(0,"rgba(255,86,56,.30)"); rg.addColorStop(1,"rgba(255,86,56,0)");
+    g.fillStyle=rg; g.fillRect(0,0,W,H);
+    return loadImg("logo-dark.png").then(function(logo){
+      g.fillStyle="#ff5638"; roundRect(g,80,86,84,84,22); g.fill();
+      var lw=54, lh=lw*(logo.height/logo.width); g.drawImage(logo, 80+(84-lw)/2, 86+(84-lh)/2, lw, lh);
+      g.fillStyle="#f5f3ef"; g.textBaseline="middle"; g.font="700 46px "+SANS; g.fillText("Gigszio", 182, 130); g.textBaseline="alphabetic";
+      var cx=W/2, cy=440, r=130;
+      g.fillStyle="#2a2130"; g.beginPath(); g.arc(cx,cy,r,0,7); g.fill();
+      g.fillStyle="#f5f3ef"; g.textAlign="center"; g.textBaseline="middle"; g.font="800 112px "+SANS;
+      g.fillText(initials(ARTIST.name)||"★", cx, cy+8); g.textBaseline="alphabetic";
+      g.fillStyle="#f5f3ef"; g.font="800 78px "+SANS; g.fillText(clip(g,ARTIST.name,960), cx, 680);
+      g.fillStyle="#9c99a6"; g.font="500 36px "+SANS; g.fillText("gigszio.com/"+ARTIST.handle, cx, 736);
+      g.textAlign="left"; g.fillStyle="#ffc24b"; g.font="700 34px "+SANS; g.fillText("UPCOMING SHOWS", 90, 856);
+      var y=910;
+      UPCOMING.slice(0,5).forEach(function(e){
+        g.fillStyle="#16161d"; roundRect(g,90,y,150,132,20); g.fill();
+        g.textAlign="center"; g.fillStyle="#f5f3ef"; g.font="800 58px "+SANS; g.fillText(e.day,165,y+70);
+        g.fillStyle="#ffc24b"; g.font="700 28px "+SANS; g.fillText(String(e.month).toUpperCase(),165,y+108);
+        g.textAlign="left"; g.fillStyle="#f5f3ef"; g.font="700 42px "+SANS; g.fillText(clip(g,e.title,720), 272, y+58);
+        g.fillStyle="#9c99a6"; g.font="400 32px "+SANS; g.fillText(clip(g,e.venue,720), 272, y+106);
+        y += 168;
+      });
+      if(!UPCOMING.length){ g.fillStyle="#9c99a6"; g.font="400 40px "+SANS; g.fillText("New dates coming soon.", 90, y+20); }
+      g.textAlign="center"; g.fillStyle="#ff9576"; g.font="700 42px "+SANS; g.fillText("Follow to never miss a show", W/2, H-150);
+      g.fillStyle="#6f6c79"; g.font="500 34px "+SANS; g.fillText("gigszio.com/"+ARTIST.handle, W/2, H-96);
+      return new Promise(function(res){ c.toBlob(function(b){ res(b); }, "image/png"); });
+    });
+  }
+  document.getElementById("storyBtn").addEventListener("click", function(){
+    if(!ARTIST){ toast("Still loading…"); return; }
+    toast("Building your story…");
+    genStory().then(function(blob){
+      var file=new File([blob], "gigszio-"+ARTIST.handle+".png", {type:"image/png"});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file], title:ARTIST.name+" · Gigszio", text:"Upcoming shows"}).catch(function(){});
+      } else {
+        var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=file.name; a.click();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
+        toast("Story image saved — post it to your IG story 📸");
+      }
+    }).catch(function(err){ console.error("story", err); toast("Couldn't build the story image"); });
+  });
   document.addEventListener("click", function(e){
     var t = e.target.closest('[data-noop]');
     if(t){ e.preventDefault(); toast("Demo — this would open ticketing 🎟️"); }
@@ -616,6 +724,10 @@
         if(res.error || !res.data) throw (res.error || new Error("artist not found"));
         var artist = res.data;
         ARTIST = artist;
+        sb.auth.getSession().then(function(s){
+          var u = s.data.session && s.data.session.user;
+          if(u && artist.owner_id === u.id){ var e=document.getElementById("ownerEdit"); if(e) e.hidden=false; }
+        });
         var av = document.querySelector(".avatar");
         if(artist.avatar_url){ av.innerHTML = '<img src="'+esc(artist.avatar_url)+'" alt="" />'; }
         else { av.textContent = initials(artist.name) || "★"; }

@@ -195,6 +195,7 @@
           <input type="file" id="dashAvatarFile" accept="image/*" hidden />
         </label>
         <h1 id="dashName">&nbsp;</h1>
+        <button class="btn btn-ghost btn-sm" id="editProfileBtn" style="margin-left:auto">✎ Edit profile</button>
       </div>
       <div class="sharebox">
         <div class="share-label">Your public link — share it anywhere</div>
@@ -210,6 +211,36 @@
     </div>
 
   </section>
+</div>
+
+<!-- edit profile sheet -->
+<div class="modal hidden" id="profileModal" style="position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px">
+  <div class="card" style="max-width:520px;width:100%">
+    <h2 style="margin:0 0 12px">Edit profile</h2>
+    <form id="editProfileForm">
+      <label for="eName">Stage name</label>
+      <input id="eName" type="text" required />
+      <label for="eHandle">Handle <span style="color:var(--muted-2);font-weight:400">— changes your public link</span></label>
+      <input id="eHandle" type="text" pattern="[a-z0-9._-]+" required />
+      <label for="eCity">City</label>
+      <input id="eCity" type="text" />
+      <label for="eBio">Bio</label>
+      <textarea id="eBio"></textarea>
+      <label>What do you do?</label>
+      <div class="checks" id="eFacets">
+        <label><input type="checkbox" value="standup" /> Standup</label>
+        <label><input type="checkbox" value="improv" /> Improv</label>
+        <label><input type="checkbox" value="theatre" /> Theatre</label>
+        <label><input type="checkbox" value="music" /> Music</label>
+      </div>
+      <div style="height:16px"></div>
+      <div class="row">
+        <button class="btn btn-ghost" type="button" id="editProfileCancel"><span>Cancel</span></button>
+        <button class="btn btn-primary" type="submit"><span>Save profile</span></button>
+      </div>
+      <div class="msg" id="editProfileMsg"></div>
+    </form>
+  </div>
 </div>
 
 <!-- event editor sheet -->
@@ -426,6 +457,32 @@
         return;
       }
       STATE.artist = res.data; toast("Profile created 🎭"); boot(STATE.user);
+    });
+  });
+
+  // ---------- edit profile ----------
+  function openProfileEditor(){
+    var a=STATE.artist; if(!a) return;
+    $("eName").value=a.name||""; $("eHandle").value=a.handle||"";
+    $("eCity").value=a.city||""; $("eBio").value=a.bio||"";
+    var facets=a.facets||[];
+    Array.prototype.forEach.call(document.querySelectorAll("#eFacets input"), function(c){ c.checked=facets.indexOf(c.value)>=0; });
+    msg($("editProfileMsg"),""); show($("profileModal"));
+  }
+  $("editProfileBtn").addEventListener("click", openProfileEditor);
+  $("editProfileCancel").addEventListener("click", function(){ hide($("profileModal")); });
+  $("editProfileForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var facets=Array.prototype.slice.call(document.querySelectorAll("#eFacets input:checked")).map(function(c){return c.value;});
+    var upd={ name:$("eName").value.trim(), handle:$("eHandle").value.trim().toLowerCase(), city:$("eCity").value.trim()||null, bio:$("eBio").value.trim()||null, facets:facets };
+    sb.from("artists").update(upd).eq("id", STATE.artist.id).select().single().then(function(res){
+      if(res.error){ msg($("editProfileMsg"), res.error.code==="23505"?"That handle is taken — try another.":res.error.message,"err"); return; }
+      STATE.artist=res.data;
+      $("dashName").textContent=res.data.name;
+      var pubUrl=new URL(encodeURIComponent(res.data.handle), location.href).href;
+      $("publicLink").href=pubUrl; $("publicUrl").value=pubUrl;
+      renderDashAvatar();
+      hide($("profileModal")); toast("Profile updated ✓");
     });
   });
 
