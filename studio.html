@@ -107,6 +107,13 @@
   .ev .acts{display:flex;gap:6px;flex:0 0 auto}
   .badge{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:20px;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
   .badge.past{opacity:.7}
+  .ev.past{opacity:.55}
+  .ev-group{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-2);margin:16px 2px 8px}
+  .invite{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid rgba(255,194,75,.35);border-radius:13px;padding:12px 14px;margin-bottom:10px}
+  .invite .info{flex:1;min-width:0}
+  .invite .t{font-weight:700;font-size:15px}
+  .invite .m{color:var(--muted);font-size:12px;margin-top:2px}
+  .invite .acts{display:flex;gap:6px;flex:0 0 auto}
 
   .msg{font-size:13px;padding:10px 12px;border-radius:10px;margin-top:12px;display:none}
   .msg.err{display:block;background:rgba(226,75,74,.12);border:1px solid rgba(226,75,74,.35);color:#f0a0a0}
@@ -204,6 +211,11 @@
           <button class="btn btn-ghost btn-sm" id="copyBtn" type="button">Copy</button>
           <a class="btn btn-ghost btn-sm" id="publicLink" target="_blank" rel="noopener">Open</a>
         </div>
+      </div>
+
+      <div id="invitesWrap" hidden>
+        <h2>Invitations</h2>
+        <div id="inviteList"></div>
       </div>
 
       <h2>Your shows <button class="btn btn-ghost btn-sm" id="newBtn">+ New show</button></h2>
@@ -412,6 +424,7 @@
       $("publicUrl").value = pubUrl;
       renderDashAvatar();
       loadEvents();
+      loadInvites();
       loadCollaborators();
     });
   }
@@ -505,24 +518,28 @@
       var evs = res.data||[];
       if(!evs.length){ el.innerHTML='<div class="center">No shows yet. Add your first one ↑</div>'; return; }
       var now=Date.now();
-      el.innerHTML = evs.map(function(ev){
+      var byId=function(id){ return evs.filter(function(e){return e.id===id;})[0]; };
+      function rowHtml(ev){
         var past = new Date(ev.starts_at).getTime() < now;
-        return '<div class="ev">'+
+        return '<div class="ev'+(past?" past":"")+'">'+
           '<div class="d"><b>'+fmtDate(ev.starts_at,"d")+'</b><span>'+fmtDate(ev.starts_at,"m")+'</span></div>'+
           '<div class="info"><div class="t">'+esc(ev.title)+'</div>'+
-            '<div class="m">'+fmtTime(ev.starts_at)+' · '+esc([ev.venue,ev.city].filter(Boolean).join(" · ")||"—")+
-            ' · <span class="badge'+(past?" past":"")+'">'+(past?"past":ev.ticket_status)+'</span></div></div>'+
+            '<div class="m">'+fmtTime(ev.starts_at)+' · '+esc([ev.venue,ev.city].filter(Boolean).join(" · ")||"—")+'</div></div>'+
           '<div class="acts">'+
+            '<button class="btn btn-ghost btn-sm" data-copy-ev="'+ev.id+'" title="Duplicate">⧉</button>'+
             '<button class="btn btn-ghost btn-sm" data-edit="'+ev.id+'">Edit</button>'+
-            '<button class="btn btn-danger btn-sm" data-del="'+ev.id+'">✕</button>'+
+            '<button class="btn btn-danger btn-sm" data-del="'+ev.id+'" title="Delete">✕</button>'+
           '</div></div>';
-      }).join("");
-      Array.prototype.forEach.call(el.querySelectorAll("[data-edit]"), function(b){
-        b.onclick=function(){ openEditor(evs.filter(function(e){return e.id===b.getAttribute("data-edit");})[0]); };
-      });
-      Array.prototype.forEach.call(el.querySelectorAll("[data-del]"), function(b){
-        b.onclick=function(){ delEvent(b.getAttribute("data-del")); };
-      });
+      }
+      var up=evs.filter(function(e){return new Date(e.starts_at).getTime()>=now;});
+      var pastEvs=evs.filter(function(e){return new Date(e.starts_at).getTime()<now;}).reverse();
+      var html='';
+      if(up.length) html+='<div class="ev-group">Upcoming</div>'+up.map(rowHtml).join("");
+      if(pastEvs.length) html+='<div class="ev-group">Past — tap ⧉ to reuse</div>'+pastEvs.map(rowHtml).join("");
+      el.innerHTML=html;
+      Array.prototype.forEach.call(el.querySelectorAll("[data-edit]"), function(b){ b.onclick=function(){ openEditor(byId(b.getAttribute("data-edit"))); }; });
+      Array.prototype.forEach.call(el.querySelectorAll("[data-copy-ev]"), function(b){ b.onclick=function(){ openEditor(byId(b.getAttribute("data-copy-ev")), true); }; });
+      Array.prototype.forEach.call(el.querySelectorAll("[data-del]"), function(b){ b.onclick=function(){ delEvent(b.getAttribute("data-del")); }; });
     });
   }
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
@@ -532,6 +549,42 @@
     sb.from("events").delete().eq("id", id).then(function(res){
       if(res.error){ toast("Couldn't delete"); console.error(res.error); return; }
       toast("Show deleted"); loadEvents();
+    });
+  }
+
+  // ---------- invitations (co-artist requests to accept) ----------
+  function loadInvites(){
+    var wrap=$("invitesWrap"), list=$("inviteList");
+    sb.from("event_artists")
+      .select("event:events(id,title,starts_at,venue,city)")
+      .eq("artist_id", STATE.artist.id).eq("status","pending")
+      .then(function(res){
+        if(res.error){ console.error(res.error); return; }
+        var rows=(res.data||[]).filter(function(r){ return r.event; });
+        if(!rows.length){ wrap.hidden=true; list.innerHTML=""; return; }
+        wrap.hidden=false;
+        list.innerHTML=rows.map(function(r){
+          var e=r.event;
+          return '<div class="invite"><div class="info">'+
+            '<div class="t">'+esc(e.title)+'</div>'+
+            '<div class="m">'+fmtDate(e.starts_at)+' · '+fmtTime(e.starts_at)+' · '+esc([e.venue,e.city].filter(Boolean).join(" · ")||"—")+'</div>'+
+            '</div><div class="acts">'+
+            '<button class="btn btn-primary btn-sm" data-acc="'+e.id+'">Accept</button>'+
+            '<button class="btn btn-ghost btn-sm" data-dec="'+e.id+'">Decline</button>'+
+            '</div></div>';
+        }).join("");
+        Array.prototype.forEach.call(list.querySelectorAll("[data-acc]"), function(b){ b.onclick=function(){ respondInvite(b.getAttribute("data-acc"), true); }; });
+        Array.prototype.forEach.call(list.querySelectorAll("[data-dec]"), function(b){ b.onclick=function(){ respondInvite(b.getAttribute("data-dec"), false); }; });
+      });
+  }
+  function respondInvite(eventId, accept){
+    var q = accept
+      ? sb.from("event_artists").update({status:"accepted"}).eq("event_id",eventId).eq("artist_id",STATE.artist.id)
+      : sb.from("event_artists").delete().eq("event_id",eventId).eq("artist_id",STATE.artist.id);
+    q.then(function(res){
+      if(res.error){ toast("Couldn't update"); console.error(res.error); return; }
+      toast(accept ? "Accepted — it's on your page now ✓" : "Invitation declined");
+      loadInvites();
     });
   }
 
@@ -564,7 +617,9 @@
   function renderCo(){
     var el=$("coList");
     el.innerHTML = coDraft.map(function(a,i){
-      return '<span class="co-chip">'+esc(a.name)+' <small>@'+esc(a.handle)+'</small>'+
+      var badge = a.status==="accepted" ? ' <small style="color:#7fd8b8">· accepted</small>'
+                : a.status==="pending"  ? ' <small style="color:#ffc24b">· invited</small>' : '';
+      return '<span class="co-chip">'+esc(a.name)+' <small>@'+esc(a.handle)+'</small>'+badge+
              '<button type="button" data-rm="'+i+'" aria-label="Remove">✕</button></span>';
     }).join("");
     Array.prototype.forEach.call(el.querySelectorAll("[data-rm]"), function(b){
@@ -638,15 +693,16 @@
   });
   document.addEventListener("click", function(e){ if(!e.target.closest(".co-search")) hideCoResults(); });
 
-  function openEditor(ev){
-    STATE.editing = ev || null;
-    $("evModalTitle").textContent = ev ? "Edit show" : "New show";
-    $("fTitle").value = ev ? ev.title : "";
-    $("fKind").value = ev ? ev.kind : "standup";
-    $("fStatus").value = ev ? ev.ticket_status : "live";
-    $("fVenue").value = ev ? (ev.venue||"") : "";
-    $("fCity").value = ev ? (ev.city||"") : "";
-    if(ev){ var _d=new Date(ev.starts_at), _p=function(n){return String(n).padStart(2,"0");};
+  function openEditor(ev, asCopy){
+    var src = ev || null;
+    STATE.editing = asCopy ? null : src;
+    $("evModalTitle").textContent = !src ? "New show" : (asCopy ? "New show (copy)" : "Edit show");
+    $("fTitle").value = src ? src.title : "";
+    $("fKind").value = src ? src.kind : "standup";
+    $("fStatus").value = src ? src.ticket_status : "live";
+    $("fVenue").value = src ? (src.venue||"") : "";
+    $("fCity").value = src ? (src.city||"") : "";
+    if(src && !asCopy){ var _d=new Date(src.starts_at), _p=function(n){return String(n).padStart(2,"0");};
       $("fDate").value=_d.getFullYear()+"-"+_p(_d.getMonth()+1)+"-"+_p(_d.getDate());
       $("fTime").value=_p(_d.getHours())+":"+_p(_d.getMinutes());
     } else {
@@ -654,20 +710,20 @@
       $("fDate").value=_n.getFullYear()+"-"+_pn(_n.getMonth()+1)+"-"+_pn(_n.getDate());
       $("fTime").value="21:00";
     }
-    $("fPrice").value = ev && ev.price_cents!=null ? (ev.price_cents/100) : "";
-    $("fUrl").value = ev ? (ev.ticket_url||"") : "";
-    $("fBooking").value = ev ? (ev.booking_note||"") : "";
-    setPosterThumb(ev ? ev.image_url : null);
+    $("fPrice").value = src && src.price_cents!=null ? (src.price_cents/100) : "";
+    $("fUrl").value = src ? (src.ticket_url||"") : "";
+    $("fBooking").value = src ? (src.booking_note||"") : "";
+    setPosterThumb(src ? src.image_url : null);
     $("fPosterFile").value = "";
     $("fCoHandle").value = "";
     coDraft = []; renderCo();
     msg($("evMsg"),"");
-    if(ev){
-      sb.from("event_artists").select("artist_id, artist:artists(handle,name)").eq("event_id", ev.id).then(function(res){
+    if(src){
+      sb.from("event_artists").select("artist_id, status, artist:artists(handle,name)").eq("event_id", src.id).then(function(res){
         if(res.error || !res.data) return;
         coDraft = res.data
           .filter(function(r){ return r.artist_id !== STATE.artist.id && r.artist; })
-          .map(function(r){ return {artist_id:r.artist_id, handle:r.artist.handle, name:r.artist.name}; });
+          .map(function(r){ return {artist_id:r.artist_id, handle:r.artist.handle, name:r.artist.name, status: asCopy ? undefined : r.status}; });
         renderCo();
       });
     }
@@ -716,11 +772,19 @@
         var self = await sb.from("event_artists").insert({event_id:eventId, artist_id:STATE.artist.id, role:"headliner", can_edit:true});
         if(self.error) throw self.error;
       }
-      // sync co-artists: clear existing links (keep me), then apply the current draft
-      var del = await sb.from("event_artists").delete().eq("event_id", eventId).neq("artist_id", STATE.artist.id);
-      if(del.error) throw del.error;
-      if(coDraft.length){
-        var rows = coDraft.map(function(a){ return {event_id:eventId, artist_id:a.artist_id, role:"cast", can_edit:false}; });
+      // sync co-artists: add new invites (pending), drop removed, keep existing (preserve accept status)
+      var existing = [];
+      if(STATE.editing){
+        var ex = await sb.from("event_artists").select("artist_id").eq("event_id", eventId).neq("artist_id", STATE.artist.id);
+        if(ex.error) throw ex.error;
+        existing = (ex.data||[]).map(function(r){ return r.artist_id; });
+      }
+      var desired = coDraft.map(function(a){ return a.artist_id; });
+      var toRemove = existing.filter(function(id){ return desired.indexOf(id)<0; });
+      var toAdd = desired.filter(function(id){ return existing.indexOf(id)<0; });
+      if(toRemove.length){ var d2 = await sb.from("event_artists").delete().eq("event_id",eventId).in("artist_id",toRemove); if(d2.error) throw d2.error; }
+      if(toAdd.length){
+        var rows = toAdd.map(function(id){ return {event_id:eventId, artist_id:id, role:"cast", can_edit:false, status:"pending"}; });
         var link = await sb.from("event_artists").insert(rows);
         if(link.error) throw link.error;
       }

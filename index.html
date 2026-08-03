@@ -442,7 +442,7 @@
   }
   function normalize(ev){
     var d = new Date(ev.starts_at);
-    var lineup = (ev.lineup||[]);
+    var lineup = (ev.lineup||[]).filter(function(l){ return l.status==="accepted"; });
     var n = lineup.length;
     var collab=null, collabNote=null;
     if(n>1){
@@ -753,8 +753,8 @@
         document.title = "Gigszio · " + artist.name;
 
         var evP = sb.from("event_artists")
-          .select("event:events(id,title,kind,venue,city,starts_at,ticket_url,ticket_status,price_cents,currency,booking_note,image_url,lineup:event_artists(role,artist:artists(name,handle)))")
-          .eq("artist_id", artist.id);
+          .select("event:events(id,title,kind,venue,city,starts_at,ticket_url,ticket_status,price_cents,currency,booking_note,image_url,lineup:event_artists(role,status,artist:artists(name,handle)))")
+          .eq("artist_id", artist.id).eq("status", "accepted");
         var cntP = sb.from("artist_stats").select("followers").eq("artist_id", artist.id).maybeSingle();
         return Promise.all([evP, cntP]);
       })
