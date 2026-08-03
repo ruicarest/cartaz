@@ -67,6 +67,7 @@
   .share-row input{flex:1;min-width:0;font-size:13px;padding:9px 10px;color:var(--muted)}
   .share-row .btn{flex:0 0 auto}
   .share-row a.btn{display:inline-flex;align-items:center;text-decoration:none}
+  .venue-field{position:relative}
   .co-search{position:relative;margin-top:6px}
   .co-results{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:12px;max-height:260px;overflow-y:auto;box-shadow:0 14px 34px rgba(0,0,0,.55)}
   .co-results[hidden]{display:none}
@@ -284,7 +285,7 @@
         </div>
       </div>
       <div class="row">
-        <div><label for="fVenue">Venue</label><input id="fVenue" type="text" placeholder="Comedy Lounge" /></div>
+        <div class="venue-field"><label for="fVenue">Venue</label><input id="fVenue" type="text" placeholder="Search a venue…" autocomplete="off" /><div id="venueResults" class="co-results" hidden></div></div>
         <div><label for="fCity">City</label><input id="fCity" type="text" placeholder="Lisbon" /></div>
       </div>
       <div class="row">
@@ -611,6 +612,41 @@
       .then(function(){ self.disabled=false; });
   });
   $("evPosterClear").addEventListener("click", function(){ setPosterThumb(null); $("fPosterFile").value=""; });
+
+  // ---- venue autocomplete (OpenStreetMap / Photon — free, no key) ----
+  var venueTimer;
+  function hideVenueResults(){ var el=$("venueResults"); el.hidden=true; el.innerHTML=""; }
+  function renderVenueResults(feats){
+    var el=$("venueResults");
+    feats = (feats||[]).filter(function(f){ return f && f.properties; });
+    if(!feats.length){ hideVenueResults(); return; }
+    el.innerHTML = feats.slice(0,6).map(function(f,i){
+      var p=f.properties, name=p.name||p.street||p.city||"—";
+      var sub=[p.street&&p.name?p.street:null, p.city, p.state, p.country].filter(Boolean).join(", ");
+      return '<div class="co-opt" data-i="'+i+'"><span><span class="nm">'+esc(name)+'</span><br><span class="hd">'+esc(sub)+'</span></span></div>';
+    }).join("");
+    Array.prototype.forEach.call(el.querySelectorAll("[data-i]"), function(o){
+      o.onclick=function(){
+        var p=feats[parseInt(o.getAttribute("data-i"),10)].properties;
+        $("fVenue").value = p.name || p.street || "";
+        if(p.city) $("fCity").value = p.city;
+        hideVenueResults();
+      };
+    });
+    el.hidden=false;
+  }
+  $("fVenue").addEventListener("input", function(){
+    clearTimeout(venueTimer);
+    var q=this.value.trim();
+    if(q.length<3){ hideVenueResults(); return; }
+    venueTimer=setTimeout(function(){
+      fetch("https://photon.komoot.io/api/?limit=6&q="+encodeURIComponent(q))
+        .then(function(r){ return r.json(); })
+        .then(function(d){ renderVenueResults(d.features); })
+        .catch(function(){ hideVenueResults(); });
+    }, 300);
+  });
+  $("fVenue").addEventListener("blur", function(){ setTimeout(hideVenueResults, 180); });
 
   // ---- co-artists draft ----
   var coDraft = [];
