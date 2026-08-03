@@ -305,7 +305,7 @@
   <footer>
     <div class="mk">🎭 Made with Gigszio</div>
     Your next show, always up to date.<br/>
-    <a href="#" id="claimLink">Create my Gigszio →</a>
+    <a href="studio.html" id="claimLink">Create my Gigszio →</a>
   </footer>
 
 </div>
@@ -580,10 +580,7 @@
     else if(navigator.clipboard){ navigator.clipboard.writeText(url); toast("Link copied ✓"); }
     else { toast(url); }
   });
-  document.getElementById("claimLink").addEventListener("click", function(ev){
-    ev.preventDefault();
-    toast("Soon you'll be able to create yours 😉");
-  });
+  // "Create my Gigszio" navigates to the Studio (href="studio.html").
   document.addEventListener("click", function(e){
     var t = e.target.closest('[data-noop]');
     if(t){ e.preventDefault(); toast("Demo — this would open ticketing 🎟️"); }

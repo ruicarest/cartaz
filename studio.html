@@ -67,6 +67,15 @@
   .share-row input{flex:1;min-width:0;font-size:13px;padding:9px 10px;color:var(--muted)}
   .share-row .btn{flex:0 0 auto}
   .share-row a.btn{display:inline-flex;align-items:center;text-decoration:none}
+  .co-input{display:flex;gap:8px;margin-top:6px}
+  .co-input input{flex:1;min-width:0}
+  .co-input .btn{flex:0 0 auto}
+  .co-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .co-list:empty{margin-top:0}
+  .co-chip{display:inline-flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:20px;padding:5px 6px 5px 12px;font-size:13px}
+  .co-chip small{color:var(--muted)}
+  .co-chip button{width:20px;height:20px;border-radius:50%;border:none;background:var(--line-strong);color:var(--text);cursor:pointer;font-size:12px;line-height:1;display:grid;place-items:center}
+  .co-chip button:hover{background:var(--accent);color:#fff}
 
   .toggle{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
 
@@ -212,6 +221,12 @@
       </div>
       <label for="fUrl">Ticket link</label>
       <input id="fUrl" type="url" placeholder="https://…" />
+      <label for="fCoHandle">Co-artists <span style="color:var(--muted-2);font-weight:400">— the show appears on their page too</span></label>
+      <div class="co-input">
+        <input id="fCoHandle" type="text" placeholder="their handle, e.g. ritasalgado" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <button class="btn btn-ghost btn-sm" type="button" id="fCoAdd">Add</button>
+      </div>
+      <div id="coList" class="co-list"></div>
       <div style="height:16px"></div>
       <div class="row">
         <button class="btn btn-ghost" type="button" id="evCancel"><span>Cancel</span></button>
@@ -369,6 +384,33 @@
     var d=new Date(iso); var pad=function(n){return String(n).padStart(2,"0");};
     return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());
   }
+  // ---- co-artists draft ----
+  var coDraft = [];
+  function renderCo(){
+    var el=$("coList");
+    el.innerHTML = coDraft.map(function(a,i){
+      return '<span class="co-chip">'+esc(a.name)+' <small>@'+esc(a.handle)+'</small>'+
+             '<button type="button" data-rm="'+i+'" aria-label="Remove">✕</button></span>';
+    }).join("");
+    Array.prototype.forEach.call(el.querySelectorAll("[data-rm]"), function(b){
+      b.onclick=function(){ coDraft.splice(parseInt(b.getAttribute("data-rm"),10),1); renderCo(); };
+    });
+  }
+  function addCo(){
+    var h = $("fCoHandle").value.trim().toLowerCase().replace(/^@/,"");
+    if(!h) return;
+    if(STATE.artist && h===STATE.artist.handle){ msg($("evMsg"),"That's you — you're already on the show.","err"); return; }
+    if(coDraft.some(function(a){return a.handle===h;})){ $("fCoHandle").value=""; return; }
+    sb.from("artists").select("id,handle,name").eq("handle",h).maybeSingle().then(function(res){
+      if(res.error){ msg($("evMsg"),res.error.message,"err"); return; }
+      if(!res.data){ msg($("evMsg"),'No artist with handle "'+h+'". They need a Gigszio page first.',"err"); return; }
+      coDraft.push({artist_id:res.data.id, handle:res.data.handle, name:res.data.name});
+      $("fCoHandle").value=""; msg($("evMsg"),""); renderCo();
+    });
+  }
+  $("fCoAdd").addEventListener("click", addCo);
+  $("fCoHandle").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); addCo(); } });
+
   function openEditor(ev){
     STATE.editing = ev || null;
     $("evModalTitle").textContent = ev ? "Edit show" : "New show";
@@ -380,7 +422,18 @@
     $("fDate").value = ev ? toLocalInput(ev.starts_at) : "";
     $("fPrice").value = ev && ev.price_cents!=null ? (ev.price_cents/100) : "";
     $("fUrl").value = ev ? (ev.ticket_url||"") : "";
+    $("fCoHandle").value = "";
+    coDraft = []; renderCo();
     msg($("evMsg"),"");
+    if(ev){
+      sb.from("event_artists").select("artist_id, artist:artists(handle,name)").eq("event_id", ev.id).then(function(res){
+        if(res.error || !res.data) return;
+        coDraft = res.data
+          .filter(function(r){ return r.artist_id !== STATE.artist.id && r.artist; })
+          .map(function(r){ return {artist_id:r.artist_id, handle:r.artist.handle, name:r.artist.name}; });
+        renderCo();
+      });
+    }
     show(evModal);
   }
   $("newBtn").addEventListener("click", function(){ openEditor(null); });
@@ -390,7 +443,7 @@
     else { $("publicUrl").select(); try{ document.execCommand("copy"); }catch(e){} toast("Link copied ✓"); }
   });
   $("evCancel").addEventListener("click", function(){ hide(evModal); });
-  evModal.addEventListener("click", function(e){ if(e.target===evModal) hide(evModal); });
+  // Intentionally NOT closing on backdrop click — avoids losing a half-filled form.
 
   $("evForm").addEventListener("submit", function(e){
     e.preventDefault();
@@ -406,25 +459,40 @@
       price_cents: priceVal==="" ? null : Math.round(parseFloat(priceVal)*100)
     };
     var btn=$("evSave"); btn.disabled=true;
-    if(STATE.editing){
-      sb.from("events").update(row).eq("id", STATE.editing.id).then(function(res){
-        btn.disabled=false;
-        if(res.error){ msg($("evMsg"),res.error.message,"err"); return; }
-        hide(evModal); toast("Show updated ✓"); loadEvents();
-      });
-    } else {
-      row.created_by = STATE.user.id;
-      sb.from("events").insert(row).select().single().then(function(res){
-        if(res.error){ btn.disabled=false; msg($("evMsg"),res.error.message,"err"); return; }
-        // link the event to my artist profile (the collaborative table)
-        sb.from("event_artists").insert({event_id:res.data.id, artist_id:STATE.artist.id, role:"headliner", can_edit:true}).then(function(r2){
-          btn.disabled=false;
-          if(r2.error){ msg($("evMsg"),"Show saved but linking failed: "+r2.error.message,"err"); return; }
-          hide(evModal); toast("Show published 🎉"); loadEvents();
-        });
-      });
-    }
+    saveShow(row).then(function(ok){ btn.disabled=false; if(ok){ hide(evModal); loadEvents(); } });
   });
+
+  async function saveShow(row){
+    try{
+      var eventId;
+      if(STATE.editing){
+        var up = await sb.from("events").update(row).eq("id", STATE.editing.id);
+        if(up.error) throw up.error;
+        eventId = STATE.editing.id;
+      } else {
+        row.created_by = STATE.user.id;
+        var ins = await sb.from("events").insert(row).select().single();
+        if(ins.error) throw ins.error;
+        eventId = ins.data.id;
+        var self = await sb.from("event_artists").insert({event_id:eventId, artist_id:STATE.artist.id, role:"headliner", can_edit:true});
+        if(self.error) throw self.error;
+      }
+      // sync co-artists: clear existing links (keep me), then apply the current draft
+      var del = await sb.from("event_artists").delete().eq("event_id", eventId).neq("artist_id", STATE.artist.id);
+      if(del.error) throw del.error;
+      if(coDraft.length){
+        var rows = coDraft.map(function(a){ return {event_id:eventId, artist_id:a.artist_id, role:"cast", can_edit:false}; });
+        var link = await sb.from("event_artists").insert(rows);
+        if(link.error) throw link.error;
+      }
+      toast(STATE.editing ? "Show updated ✓" : coDraft.length ? "Shared show published 🎉" : "Show published 🎉");
+      return true;
+    }catch(err){
+      console.error("saveShow error", err);
+      msg($("evMsg"), (err && err.message) || "Couldn't save — try again", "err");
+      return false;
+    }
+  }
 
   // ---------- start ----------
   paintAuthMode();
