@@ -1,4 +1,4 @@
-# Cartaz
+# Gigszio
 
 A link-in-bio for live comedy & theatre artists — every date and ticket link in one place.
 

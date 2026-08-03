@@ -3,22 +3,24 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Cartaz · Miguel Tavares</title>
+<title>Gigszio · Miguel Tavares</title>
 <meta name="description" content="Miguel Tavares' next shows — standup, improv and theatre. Follow and get pinged about upcoming dates." />
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
 
 <!-- Open Graph -->
 <meta property="og:type" content="website" />
-<meta property="og:site_name" content="Cartaz" />
-<meta property="og:title" content="Miguel Tavares · Cartaz" />
+<meta property="og:site_name" content="Gigszio" />
+<meta property="og:title" content="Miguel Tavares · Gigszio" />
 <meta property="og:description" content="Standup, improv & theatre — every date in one place. Follow to never miss a show." />
 <meta property="og:url" content="https://ruicarest.github.io/cartaz/" />
 <meta property="og:image" content="https://ruicarest.github.io/cartaz/og.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="Miguel Tavares on Cartaz — standup, improv and theatre." />
+<meta property="og:image:alt" content="Miguel Tavares on Gigszio — standup, improv and theatre." />
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Miguel Tavares · Cartaz" />
+<meta name="twitter:title" content="Miguel Tavares · Gigszio" />
 <meta name="twitter:description" content="Standup, improv & theatre — every date in one place. Follow to never miss a show." />
 <meta name="twitter:image" content="https://ruicarest.github.io/cartaz/og.png" />
 <meta name="theme-color" content="#0e0e12" />
@@ -64,6 +66,7 @@
     background:linear-gradient(140deg,var(--accent),#ff8a5c);
     display:grid;place-items:center;font-size:13px;box-shadow:0 3px 10px rgba(255,86,56,.4);
   }
+  .brand .dot img{width:74%;height:74%;object-fit:contain;display:block}
   .brand small{color:var(--muted);font-weight:500}
   .share{
     border:1px solid var(--line-strong);background:transparent;color:var(--text);
@@ -249,7 +252,7 @@
 <div class="app">
 
   <div class="brandbar">
-    <div class="brand"><span class="dot">🎭</span> Cartaz <small>&nbsp;· beta</small></div>
+    <div class="brand"><span class="dot"><img src="logo-white.png" alt="" /></span> Gigszio <small>&nbsp;· beta</small></div>
     <button class="share" id="shareBtn" aria-label="Share">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
     </button>
@@ -300,9 +303,9 @@
   <div class="past" id="pastList"></div>
 
   <footer>
-    <div class="mk">🎭 Made with Cartaz</div>
+    <div class="mk">🎭 Made with Gigszio</div>
     Your next show, always up to date.<br/>
-    <a href="#" id="claimLink">Create my Cartaz →</a>
+    <a href="#" id="claimLink">Create my Gigszio →</a>
   </footer>
 
 </div>
@@ -558,7 +561,7 @@
 
   document.getElementById("shareBtn").addEventListener("click", function(){
     var url = location.href;
-    if(navigator.share){ navigator.share({title:"Miguel Tavares on Cartaz", url:url}).catch(function(){}); }
+    if(navigator.share){ navigator.share({title:"Miguel Tavares on Gigszio", url:url}).catch(function(){}); }
     else if(navigator.clipboard){ navigator.clipboard.writeText(url); toast("Link copied ✓"); }
     else { toast(url); }
   });
@@ -590,9 +593,9 @@
         ARTIST = artist;
         document.querySelector(".avatar").textContent = initials(artist.name) || "★";
         document.querySelector("h1").textContent = artist.name;
-        document.querySelector(".handle").textContent = "cartaz.pt/" + artist.handle;
+        document.querySelector(".handle").textContent = "gigszio.com/" + artist.handle;
         if(artist.bio) document.querySelector(".bio").textContent = artist.bio;
-        document.title = "Cartaz · " + artist.name;
+        document.title = "Gigszio · " + artist.name;
 
         var evP = sb.from("event_artists")
           .select("event:events(id,title,kind,venue,city,starts_at,ticket_url,ticket_status,price_cents,currency,lineup:event_artists(role,artist:artists(name,handle)))")
@@ -618,7 +621,7 @@
         renderPast();
       })
       .catch(function(err){
-        console.error("Cartaz load error:", err);
+        console.error("Gigszio load error:", err);
         list.innerHTML = '<div class="empty">Couldn’t load shows right now. Please refresh.</div>';
       });
   }
