@@ -68,6 +68,12 @@
   .share-row .btn{flex:0 0 auto}
   .share-row a.btn{display:inline-flex;align-items:center;text-decoration:none}
   .venue-field{position:relative}
+  .emoji-palette{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .emoji-opt{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);cursor:pointer;font-size:19px;line-height:1;display:grid;place-items:center}
+  .emoji-opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .facet-add-row{display:flex;gap:8px;margin-top:8px}
+  .facet-add-row input{flex:1;min-width:0}
+  .facet-add-row .btn{flex:0 0 auto}
   .links-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
   .links-grid input:last-child{grid-column:1 / -1}
   .co-search{position:relative;margin-top:6px}
@@ -185,11 +191,16 @@
           </label>
           <label>What do you do?</label>
           <div class="checks">
-            <label><input type="checkbox" value="standup" checked /> Standup</label>
-            <label><input type="checkbox" value="improv" /> Improv</label>
-            <label><input type="checkbox" value="theatre" /> Theatre</label>
-            <label><input type="checkbox" value="music" /> Music</label>
+            <label><input type="checkbox" id="pFstandup" checked /> 🎤 Standup</label>
+            <label><input type="checkbox" id="pFtheatre" /> 🎬 Theatre</label>
+            <label><input type="checkbox" id="pFmusic" /> 🎵 Music</label>
           </div>
+          <div class="emoji-palette" id="pPalette"></div>
+          <div class="facet-add-row">
+            <input id="pCustomLabel" placeholder="Add your own — e.g. Improv" autocomplete="off" />
+            <button type="button" class="btn btn-ghost btn-sm" id="pCustomAdd">Add</button>
+          </div>
+          <div class="co-list" id="pCustomChips"></div>
           <label>Links <span style="color:var(--muted-2);font-weight:400">— profile URL or @handle (optional)</span></label>
           <div class="links-grid">
             <input id="pInstagram" placeholder="Instagram" autocomplete="off" />
@@ -250,12 +261,17 @@
       <label for="eBio">Bio</label>
       <textarea id="eBio"></textarea>
       <label>What do you do?</label>
-      <div class="checks" id="eFacets">
-        <label><input type="checkbox" value="standup" /> Standup</label>
-        <label><input type="checkbox" value="improv" /> Improv</label>
-        <label><input type="checkbox" value="theatre" /> Theatre</label>
-        <label><input type="checkbox" value="music" /> Music</label>
+      <div class="checks">
+        <label><input type="checkbox" id="eFstandup" /> 🎤 Standup</label>
+        <label><input type="checkbox" id="eFtheatre" /> 🎬 Theatre</label>
+        <label><input type="checkbox" id="eFmusic" /> 🎵 Music</label>
       </div>
+      <div class="emoji-palette" id="ePalette"></div>
+      <div class="facet-add-row">
+        <input id="eCustomLabel" placeholder="Add your own — e.g. Improv" autocomplete="off" />
+        <button type="button" class="btn btn-ghost btn-sm" id="eCustomAdd">Add</button>
+      </div>
+      <div class="co-list" id="eCustomChips"></div>
       <label>Links <span style="color:var(--muted-2);font-weight:400">— profile URL or @handle</span></label>
       <div class="links-grid">
         <input id="eInstagram" placeholder="Instagram" autocomplete="off" />
@@ -391,6 +407,50 @@
 
   var STATE = { user:null, artist:null, editing:null };
 
+  // ---------- facet editor (checkboxes + custom icon/label), shared by create & edit ----------
+  var FACET_EMOJIS=["🎭","🎤","🎬","🎵","🎙️","🃏","✨","🎪","🎸","📖","🕺","🎨"];
+  var facetSel={p:"🎭", e:"🎭"}, facetCustom={p:[], e:[]};
+  function paintPalette(pre){ Array.prototype.forEach.call($(pre+"Palette").querySelectorAll("[data-em]"), function(b){ b.classList.toggle("sel", b.getAttribute("data-em")===facetSel[pre]); }); }
+  function initPalette(pre){
+    var pal=$(pre+"Palette");
+    pal.innerHTML=FACET_EMOJIS.map(function(em){ return '<button type="button" class="emoji-opt" data-em="'+em+'">'+em+'</button>'; }).join("");
+    Array.prototype.forEach.call(pal.querySelectorAll("[data-em]"), function(b){ b.onclick=function(){ facetSel[pre]=b.getAttribute("data-em"); paintPalette(pre); }; });
+    paintPalette(pre);
+  }
+  function renderFacetChips(pre){
+    var el=$(pre+"CustomChips");
+    el.innerHTML=facetCustom[pre].map(function(f,i){ return '<span class="co-chip">'+f.icon+" "+esc(f.label)+'<button type="button" data-rmf="'+i+'" aria-label="Remove">✕</button></span>'; }).join("");
+    Array.prototype.forEach.call(el.querySelectorAll("[data-rmf]"), function(b){ b.onclick=function(){ facetCustom[pre].splice(parseInt(b.getAttribute("data-rmf"),10),1); renderFacetChips(pre); }; });
+  }
+  function addFacet(pre){
+    var label=$(pre+"CustomLabel").value.trim(); if(!label) return;
+    facetCustom[pre].push({icon:facetSel[pre], label:label});
+    $(pre+"CustomLabel").value=""; renderFacetChips(pre);
+  }
+  function wireFacetEditor(pre){
+    initPalette(pre);
+    $(pre+"CustomAdd").addEventListener("click", function(){ addFacet(pre); });
+    $(pre+"CustomLabel").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); addFacet(pre); } });
+  }
+  function getFacets(pre){
+    var known=[{id:pre+"Fstandup",icon:"🎤",label:"Standup"},{id:pre+"Ftheatre",icon:"🎬",label:"Theatre"},{id:pre+"Fmusic",icon:"🎵",label:"Music"}];
+    return known.filter(function(k){ return $(k.id).checked; }).map(function(k){ return {icon:k.icon,label:k.label}; }).concat(facetCustom[pre]);
+  }
+  function setFacets(pre, arr){
+    arr=Array.isArray(arr)?arr:[];
+    $(pre+"Fstandup").checked=false; $(pre+"Ftheatre").checked=false; $(pre+"Fmusic").checked=false;
+    facetCustom[pre]=[];
+    arr.forEach(function(f){
+      var label=(f&&f.label)||"";
+      if(label==="Standup") $(pre+"Fstandup").checked=true;
+      else if(label==="Theatre") $(pre+"Ftheatre").checked=true;
+      else if(label==="Music") $(pre+"Fmusic").checked=true;
+      else if(label) facetCustom[pre].push({icon:(f&&f.icon)||"✨", label:label});
+    });
+    renderFacetChips(pre);
+  }
+  wireFacetEditor("p"); wireFacetEditor("e");
+
   // ---------- auth ----------
   var mode="signin";
   function paintAuthMode(){
@@ -477,7 +537,7 @@
   });
   $("profileForm").addEventListener("submit", function(e){
     e.preventDefault();
-    var facets = Array.prototype.slice.call(document.querySelectorAll("#profileForm .checks input:checked")).map(function(c){return c.value;});
+    var facets = getFacets("p");
     var row = {
       owner_id: STATE.user.id,
       name: $("pName").value.trim(),
@@ -508,15 +568,14 @@
     $("eCity").value=a.city||""; $("eBio").value=a.bio||"";
     $("eInstagram").value=a.instagram||""; $("eTiktok").value=a.tiktok||"";
     $("eYoutube").value=a.youtube||""; $("eLinkedin").value=a.linkedin||""; $("eWebsite").value=a.website||"";
-    var facets=a.facets||[];
-    Array.prototype.forEach.call(document.querySelectorAll("#eFacets input"), function(c){ c.checked=facets.indexOf(c.value)>=0; });
+    setFacets("e", a.facets);
     msg($("editProfileMsg"),""); show($("profileModal"));
   }
   $("editProfileBtn").addEventListener("click", openProfileEditor);
   $("editProfileCancel").addEventListener("click", function(){ hide($("profileModal")); });
   $("editProfileForm").addEventListener("submit", function(e){
     e.preventDefault();
-    var facets=Array.prototype.slice.call(document.querySelectorAll("#eFacets input:checked")).map(function(c){return c.value;});
+    var facets=getFacets("e");
     var upd={ name:$("eName").value.trim(), handle:$("eHandle").value.trim().toLowerCase(), city:$("eCity").value.trim()||null, bio:$("eBio").value.trim()||null,
       instagram:$("eInstagram").value.trim()||null, tiktok:$("eTiktok").value.trim()||null, youtube:$("eYoutube").value.trim()||null, linkedin:$("eLinkedin").value.trim()||null, website:$("eWebsite").value.trim()||null,
       facets:facets };

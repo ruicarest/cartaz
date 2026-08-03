@@ -295,11 +295,7 @@
     <h1>&nbsp;</h1>
     <div class="handle">&nbsp;</div>
     <div class="status"><span class="pulse"></span> &nbsp;</div>
-    <div class="facet-tags">
-      <span>🎤 Standup</span>
-      <span>🎭 Improv</span>
-      <span>🎬 Theatre</span>
-    </div>
+    <div class="facet-tags" id="facetTags" style="display:none"></div>
     <p class="bio">&nbsp;</p>
     <div class="socials" id="socials" style="display:none"></div>
     <div class="meta">
@@ -505,6 +501,12 @@
       var u=socialUrl(p, a[p]); if(!u) return "";
       return '<a href="'+esc(u)+'" target="_blank" rel="noopener" title="'+p+'" aria-label="'+p+'">'+socialIcons[p]+'</a>';
     }).join("");
+    el.innerHTML=html; el.style.display = html ? "flex" : "none";
+  }
+  function renderFacets(a){
+    var el=document.getElementById("facetTags");
+    var f=Array.isArray(a.facets)?a.facets:[];
+    var html=f.map(function(x){ var icon=(x&&x.icon)||"✨", label=(x&&x.label)||""; return '<span>'+esc(icon)+' '+esc(label)+'</span>'; }).join("");
     el.innerHTML=html; el.style.display = html ? "flex" : "none";
   }
   function collabHTML(ev){
@@ -782,6 +784,7 @@
         document.querySelector("h1").textContent = artist.name;
         document.querySelector(".handle").textContent = "gigszio.com/" + artist.handle;
         if(artist.bio) document.querySelector(".bio").textContent = artist.bio;
+        renderFacets(artist);
         renderSocials(artist);
         document.title = "Gigszio · " + artist.name;
 
