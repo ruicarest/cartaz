@@ -707,28 +707,29 @@
     var rg=g.createRadialGradient(W/2,-150,60,W/2,-150,1400); rg.addColorStop(0,"rgba(255,86,56,.30)"); rg.addColorStop(1,"rgba(255,86,56,0)");
     g.fillStyle=rg; g.fillRect(0,0,W,H);
     return loadImg("logo-dark.png").then(function(logo){
-      g.fillStyle="#ff5638"; roundRect(g,80,86,84,84,22); g.fill();
-      var lw=54, lh=lw*(logo.height/logo.width); g.drawImage(logo, 80+(84-lw)/2, 86+(84-lh)/2, lw, lh);
-      g.fillStyle="#f5f3ef"; g.textBaseline="middle"; g.font="700 46px "+SANS; g.fillText("Gigszio", 182, 130); g.textBaseline="alphabetic";
-      var cx=W/2, cy=440, r=130;
-      g.fillStyle="#2a2130"; g.beginPath(); g.arc(cx,cy,r,0,7); g.fill();
-      g.fillStyle="#f5f3ef"; g.textAlign="center"; g.textBaseline="middle"; g.font="800 112px "+SANS;
-      g.fillText(initials(ARTIST.name)||"★", cx, cy+8); g.textBaseline="alphabetic";
-      g.fillStyle="#f5f3ef"; g.font="800 78px "+SANS; g.fillText(clip(g,ARTIST.name,960), cx, 680);
-      g.fillStyle="#9c99a6"; g.font="500 36px "+SANS; g.fillText("gigszio.com/"+ARTIST.handle, cx, 736);
-      g.textAlign="left"; g.fillStyle="#ffc24b"; g.font="700 34px "+SANS; g.fillText("UPCOMING SHOWS", 90, 856);
-      var y=910;
-      UPCOMING.slice(0,5).forEach(function(e){
-        g.fillStyle="#16161d"; roundRect(g,90,y,150,132,20); g.fill();
-        g.textAlign="center"; g.fillStyle="#f5f3ef"; g.font="800 58px "+SANS; g.fillText(e.day,165,y+70);
-        g.fillStyle="#ffc24b"; g.font="700 28px "+SANS; g.fillText(String(e.month).toUpperCase(),165,y+108);
-        g.textAlign="left"; g.fillStyle="#f5f3ef"; g.font="700 42px "+SANS; g.fillText(clip(g,e.title,720), 272, y+58);
-        g.fillStyle="#9c99a6"; g.font="400 32px "+SANS; g.fillText(clip(g,e.venue,720), 272, y+106);
-        y += 168;
+      // Gigszio brand, centered at top (coral chip + wordmark)
+      var chip=104, chipY=150;
+      g.font="800 76px "+SANS;
+      var word="Gigszio", ww=g.measureText(word).width, gap=24, groupW=chip+gap+ww, startX=(W-groupW)/2;
+      g.fillStyle="#ff5638"; roundRect(g,startX,chipY,chip,chip,28); g.fill();
+      var lw=chip*0.6, lh=lw*(logo.height/logo.width); g.drawImage(logo, startX+(chip-lw)/2, chipY+(chip-lh)/2, lw, lh);
+      g.textAlign="left"; g.textBaseline="middle"; g.fillStyle="#f5f3ef"; g.fillText(word, startX+chip+gap, chipY+chip/2); g.textBaseline="alphabetic";
+      // artist name
+      g.textAlign="center"; g.fillStyle="#f5f3ef"; g.font="800 88px "+SANS; g.fillText(clip(g,ARTIST.name,980), W/2, 400);
+      // upcoming shows (the focus)
+      g.textAlign="left"; g.fillStyle="#ffc24b"; g.font="700 38px "+SANS; g.fillText("UPCOMING SHOWS", 90, 520);
+      var y=580;
+      UPCOMING.slice(0,6).forEach(function(e){
+        g.fillStyle="#16161d"; roundRect(g,90,y,160,140,22); g.fill();
+        g.textAlign="center"; g.fillStyle="#f5f3ef"; g.font="800 64px "+SANS; g.fillText(e.day,170,y+76);
+        g.fillStyle="#ffc24b"; g.font="700 30px "+SANS; g.fillText(String(e.month).toUpperCase(),170,y+116);
+        g.textAlign="left"; g.fillStyle="#f5f3ef"; g.font="700 48px "+SANS; g.fillText(clip(g,e.title,730), 285, y+64);
+        g.fillStyle="#9c99a6"; g.font="400 34px "+SANS; g.fillText(clip(g,e.venue,730), 285, y+114);
+        y += 196;
       });
-      if(!UPCOMING.length){ g.fillStyle="#9c99a6"; g.font="400 40px "+SANS; g.fillText("New dates coming soon.", 90, y+20); }
-      g.textAlign="center"; g.fillStyle="#ff9576"; g.font="700 42px "+SANS; g.fillText("Follow to never miss a show", W/2, H-150);
-      g.fillStyle="#6f6c79"; g.font="500 34px "+SANS; g.fillText("gigszio.com/"+ARTIST.handle, W/2, H-96);
+      if(!UPCOMING.length){ g.textAlign="center"; g.fillStyle="#9c99a6"; g.font="400 44px "+SANS; g.fillText("New dates coming soon.", W/2, y+40); }
+      // footer: just the link
+      g.textAlign="center"; g.fillStyle="#9c99a6"; g.font="600 40px "+SANS; g.fillText("gigszio.com/"+ARTIST.handle, W/2, H-100);
       return new Promise(function(res){ c.toBlob(function(b){ res(b); }, "image/png"); });
     });
   }
