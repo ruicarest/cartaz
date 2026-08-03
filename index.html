@@ -216,6 +216,32 @@
 
   .empty{text-align:center;color:var(--muted-2);font-size:14px;padding:30px 0}
 
+  /* ---------- email capture sheet ---------- */
+  .modal{
+    position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;
+    background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s;
+  }
+  .modal.show{opacity:1;pointer-events:auto}
+  .sheet{
+    width:100%;max-width:var(--maxw);background:var(--surface);border:1px solid var(--line-strong);
+    border-radius:20px 20px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom));
+    transform:translateY(24px);transition:transform .22s;position:relative;
+  }
+  .modal.show .sheet{transform:translateY(0)}
+  .sheet-title{font-size:18px;font-weight:800;letter-spacing:-.02em}
+  .sheet-sub{color:var(--muted);font-size:13px;margin:6px 0 16px}
+  .sheet form{display:flex;flex-direction:column;gap:10px}
+  .sheet input{
+    width:100%;font:inherit;font-size:16px;color:var(--text);background:var(--surface-2);
+    border:1px solid var(--line-strong);border-radius:12px;padding:13px 14px;outline:none;
+  }
+  .sheet input:focus{border-color:var(--accent)}
+  .sheet .btn-primary{width:100%}
+  .sheet-close{
+    position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:9px;cursor:pointer;
+    background:var(--surface-2);border:1px solid var(--line);color:var(--muted);font-size:15px;line-height:1;
+  }
+
   @media (max-width:360px){ .btn{font-size:14px} h1{font-size:22px} }
 </style>
 </head>
@@ -281,6 +307,18 @@
 
 </div>
 
+<div class="modal" id="emailModal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <button class="sheet-close" id="sheetClose" aria-label="Close">✕</button>
+    <div class="sheet-title" id="sheetTitle">Get notified</div>
+    <p class="sheet-sub" id="sheetSub">We'll email you about upcoming shows. No spam, unsubscribe anytime.</p>
+    <form id="emailForm">
+      <input id="emailInput" type="email" inputmode="email" autocomplete="email" placeholder="your@email.com" required />
+      <button class="btn btn-primary" type="submit"><span>Notify me</span></button>
+    </form>
+  </div>
+</div>
+
 <div class="toast" id="toast">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
   <span id="toastMsg">Done</span>
@@ -294,7 +332,7 @@
   // Public anon key — safe in the frontend; reads are gated by Row-Level Security.
   var SUPABASE_URL = "https://lqwxqrntxlzytizjapzh.supabase.co";
   var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxxd3hxcm50eGx6eXRpemphcHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3Mjg3NDQsImV4cCI6MjEwMTMwNDc0NH0.orqrk_8hksacqzGk5woBmt3C0gDy_Ya6yl-1E6REKtc";
-  var HANDLE = "migueltavares";
+  var HANDLE = (new URLSearchParams(location.search).get("u") || "migueltavares").toLowerCase();
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   var icons = {
@@ -398,7 +436,7 @@
     '</article>';
   }
 
-  var UPCOMING=[], PAST=[], currentFilter="all", BASE_FOLLOWERS=0;
+  var UPCOMING=[], PAST=[], currentFilter="all", BASE_FOLLOWERS=0, ARTIST=null;
 
   function renderUpcoming(filter){
     var list = document.getElementById("eventList");
@@ -418,10 +456,18 @@
       btn.addEventListener("click", function(){
         var id = btn.getAttribute("data-bell");
         var reminders = LS.get("reminders", {});
-        reminders[id] = !reminders[id];
-        LS.set("reminders", reminders);
-        btn.classList.toggle("on", reminders[id]);
-        toast(reminders[id] ? "You'll be notified about this show 🔔" : "Reminder removed");
+        if(reminders[id]){                       // turn off (local only — no delete policy)
+          reminders[id]=false; LS.set("reminders",reminders); btn.classList.remove("on");
+          toast("Reminder removed"); return;
+        }
+        captureEmail("We'll email you a reminder before this show.").then(function(email){
+          if(!email) return;
+          sb.rpc("remind_event", {p_event:id, p_email:email}).then(function(res){
+            if(res.error){ console.error(res.error); toast("Couldn't set reminder — try again"); return; }
+            reminders[id]=true; LS.set("reminders",reminders); btn.classList.add("on");
+            toast("You'll be reminded about this show 🔔");
+          });
+        });
       });
     });
   }
@@ -433,21 +479,72 @@
     var f = LS.get("following", false);
     followBtn.classList.toggle("following", f);
     followBtn.querySelector("span").textContent = f ? "Following" : "Follow";
-    followCount.textContent = fmt(BASE_FOLLOWERS + (f?1:0));
+    followCount.textContent = fmt(BASE_FOLLOWERS);
+  }
+  function refreshFollowerCount(){
+    if(!ARTIST) return;
+    sb.from("artist_stats").select("followers").eq("artist_id",ARTIST.id).maybeSingle()
+      .then(function(r){ if(r.data){ BASE_FOLLOWERS = r.data.followers||0; paintFollow(); } });
   }
   followBtn.addEventListener("click", function(){
-    var f = !LS.get("following", false);
-    LS.set("following", f);
-    paintFollow();
-    if(f) toast("Following Miguel Tavares — we'll keep you posted 🎭");
+    if(LS.get("following", false)){ toast("You're already following ✓"); return; }
+    if(!ARTIST){ toast("Still loading…"); return; }
+    captureEmail("Follow "+ARTIST.name+" — we'll email you about every new show.").then(function(email){
+      if(!email) return;
+      sb.rpc("follow_artist", {p_artist:ARTIST.id, p_email:email}).then(function(res){
+        if(res.error){ console.error(res.error); toast("Couldn't follow — try again"); return; }
+        LS.set("following", true); paintFollow();
+        refreshFollowerCount();
+        toast("Following "+ARTIST.name+" 🎭");
+      });
+    });
   });
   document.getElementById("notifyAll").addEventListener("click", function(){
-    var reminders = {};
-    UPCOMING.forEach(function(e){ reminders[e.id]=true; });
-    LS.set("reminders", reminders);
-    if(!LS.get("following",false)){ LS.set("following", true); paintFollow(); }
-    renderUpcoming(currentFilter);
-    toast("Subscribed to all upcoming shows 🔔");
+    if(!ARTIST || !UPCOMING.length){ toast("Still loading…"); return; }
+    captureEmail("Get an email reminder for every upcoming show.").then(function(email){
+      if(!email) return;
+      var calls = UPCOMING.map(function(e){ return sb.rpc("remind_event", {p_event:e.id, p_email:email}); });
+      calls.push(sb.rpc("follow_artist", {p_artist:ARTIST.id, p_email:email}));
+      Promise.all(calls).then(function(results){
+        var failed = results.filter(function(r){ return r && r.error; });
+        if(failed.length){ console.error(failed[0].error); toast("Couldn't subscribe — try again"); return; }
+        var reminders = {}; UPCOMING.forEach(function(e){ reminders[e.id]=true; });
+        LS.set("reminders", reminders);
+        LS.set("following", true); paintFollow(); refreshFollowerCount();
+        renderUpcoming(currentFilter);
+        toast("Subscribed to all upcoming shows 🔔");
+      });
+    });
+  });
+
+  // ---------- email capture sheet ----------
+  var modal = document.getElementById("emailModal");
+  var emailForm = document.getElementById("emailForm");
+  var emailInput = document.getElementById("emailInput");
+  var sheetSub = document.getElementById("sheetSub");
+  var pendingResolve = null;
+  function captureEmail(sub){
+    var cached = LS.get("fanEmail", null);
+    if(cached) return Promise.resolve(cached);
+    sheetSub.textContent = sub || "We'll email you about upcoming shows. No spam.";
+    modal.classList.add("show"); modal.setAttribute("aria-hidden","false");
+    setTimeout(function(){ emailInput.focus(); }, 60);
+    return new Promise(function(resolve){ pendingResolve = resolve; });
+  }
+  function dismissModal(){
+    modal.classList.remove("show"); modal.setAttribute("aria-hidden","true");
+    var r = pendingResolve; pendingResolve = null; if(r) r(null);
+  }
+  document.getElementById("sheetClose").addEventListener("click", dismissModal);
+  modal.addEventListener("click", function(e){ if(e.target===modal) dismissModal(); });
+  emailForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    var v = emailInput.value.trim();
+    if(!v) return;
+    LS.set("fanEmail", v);
+    modal.classList.remove("show"); modal.setAttribute("aria-hidden","true");
+    var r = pendingResolve; pendingResolve = null; emailInput.value = "";
+    if(r) r(v);
   });
 
   document.getElementById("filters").addEventListener("click", function(e){
@@ -490,6 +587,7 @@
       .then(function(res){
         if(res.error || !res.data) throw (res.error || new Error("artist not found"));
         var artist = res.data;
+        ARTIST = artist;
         document.querySelector(".avatar").textContent = initials(artist.name) || "★";
         document.querySelector("h1").textContent = artist.name;
         document.querySelector(".handle").textContent = "cartaz.pt/" + artist.handle;

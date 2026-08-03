@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Cartaz Studio</title>
+<meta name="robots" content="noindex" />
+<style>
+  :root{
+    --bg:#0e0e12;--surface:#16161d;--surface-2:#1e1e27;--line:rgba(255,255,255,.08);
+    --line-strong:rgba(255,255,255,.14);--text:#f5f3ef;--muted:#9c99a6;--muted-2:#6f6c79;
+    --accent:#ff5638;--accent-2:#ffc24b;--accent-soft:rgba(255,86,56,.14);--radius:13px;
+    font-synthesis-weight:none;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--text);min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(120% 70% at 50% -10%, rgba(255,86,56,.16), transparent 55%);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:18px 16px 80px}
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:-.02em}
+  .brand .dot{width:22px;height:22px;border-radius:7px;background:linear-gradient(140deg,var(--accent),#ff8a5c);display:grid;place-items:center;font-size:13px}
+  .brand small{color:var(--muted);font-weight:500}
+  .who{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:10px}
+  .link{color:var(--accent-2);text-decoration:none;font-weight:600;cursor:pointer;background:none;border:none;font:inherit}
+
+  h1{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:18px 0 4px}
+  h2{font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:26px 2px 12px;display:flex;align-items:center;justify-content:space-between}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:14px}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+  label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin:12px 0 6px}
+  label:first-child{margin-top:0}
+  input,select,textarea{
+    width:100%;font:inherit;font-size:16px;color:var(--text);background:var(--surface-2);
+    border:1px solid var(--line-strong);border-radius:11px;padding:11px 12px;outline:none;
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:64px}
+  .row{display:flex;gap:10px}
+  .row>*{flex:1}
+  .checks{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}
+  .checks label{display:flex;align-items:center;gap:7px;margin:0;color:var(--text);font-size:14px;font-weight:500}
+  .checks input{width:auto}
+
+  .btn{border:none;cursor:pointer;font:inherit;font-weight:700;font-size:15px;padding:12px 16px;border-radius:12px;transition:transform .06s,background .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  .btn:active{transform:scale(.98)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .btn-primary{background:var(--accent);color:#fff;width:100%}
+  .btn-ghost{background:var(--surface-2);border:1px solid var(--line-strong);color:var(--text)}
+  .btn-sm{font-size:13px;padding:8px 12px;border-radius:10px}
+  .btn-danger{background:transparent;border:1px solid rgba(226,75,74,.4);color:#f09595}
+
+  .toggle{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
+
+  .ev{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-bottom:10px}
+  .ev .d{flex:0 0 46px;text-align:center;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:6px 2px}
+  .ev .d b{display:block;font-size:18px;font-weight:800;line-height:1}
+  .ev .d span{font-size:10px;color:var(--accent-2);text-transform:uppercase;font-weight:700}
+  .ev .info{flex:1;min-width:0}
+  .ev .t{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ev .m{color:var(--muted);font-size:12px;margin-top:2px}
+  .ev .acts{display:flex;gap:6px;flex:0 0 auto}
+  .badge{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:20px;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+  .badge.past{opacity:.7}
+
+  .msg{font-size:13px;padding:10px 12px;border-radius:10px;margin-top:12px;display:none}
+  .msg.err{display:block;background:rgba(226,75,74,.12);border:1px solid rgba(226,75,74,.35);color:#f0a0a0}
+  .msg.ok{display:block;background:rgba(29,158,117,.12);border:1px solid rgba(29,158,117,.35);color:#7fd8b8}
+
+  .hidden{display:none!important}
+  .center{text-align:center;color:var(--muted-2);padding:26px 0;font-size:14px}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);background:var(--text);color:#141414;font-weight:600;font-size:13px;padding:11px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:40}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><span class="dot">🎭</span> Cartaz <small>Studio</small></div>
+    <div class="who" id="who"></div>
+  </div>
+
+  <!-- AUTH -->
+  <section id="authView" class="hidden">
+    <h1 id="authTitle">Sign in to your Studio</h1>
+    <p class="sub" id="authSub">Manage your shows and let fans follow you.</p>
+    <div class="card">
+      <form id="authForm">
+        <label for="authEmail">Email</label>
+        <input id="authEmail" type="email" autocomplete="email" placeholder="you@email.com" required />
+        <label for="authPass">Password</label>
+        <input id="authPass" type="password" autocomplete="current-password" placeholder="••••••••" minlength="6" required />
+        <div style="height:14px"></div>
+        <button class="btn btn-primary" type="submit" id="authBtn"><span>Sign in</span></button>
+        <div class="msg" id="authMsg"></div>
+      </form>
+      <div class="toggle">
+        <span id="toggleTxt">New here?</span>
+        <button class="link" id="toggleBtn" type="button">Create an account</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <section id="appView" class="hidden">
+
+    <!-- profile create -->
+    <div id="profileCreate" class="hidden">
+      <h1>Create your artist page</h1>
+      <p class="sub">This is what fans see at cartaz.pt/&lt;your handle&gt;.</p>
+      <div class="card">
+        <form id="profileForm">
+          <label for="pName">Stage name</label>
+          <input id="pName" type="text" placeholder="e.g. Miguel Tavares" required />
+          <label for="pHandle">Handle</label>
+          <input id="pHandle" type="text" placeholder="migueltavares" pattern="[a-z0-9._-]+" required />
+          <label for="pCity">City</label>
+          <input id="pCity" type="text" placeholder="Lisbon" />
+          <label for="pBio">Bio</label>
+          <textarea id="pBio" placeholder="One line about you and your shows."></textarea>
+          <label>What do you do?</label>
+          <div class="checks">
+            <label><input type="checkbox" value="standup" checked /> Standup</label>
+            <label><input type="checkbox" value="improv" /> Improv</label>
+            <label><input type="checkbox" value="theatre" /> Theatre</label>
+            <label><input type="checkbox" value="music" /> Music</label>
+          </div>
+          <div style="height:16px"></div>
+          <button class="btn btn-primary" type="submit"><span>Create my page</span></button>
+          <div class="msg" id="profileMsg"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- dashboard -->
+    <div id="dashboard" class="hidden">
+      <h1 id="dashName">&nbsp;</h1>
+      <p class="sub"><a class="link" id="publicLink" target="_blank" rel="noopener">View my public page →</a></p>
+
+      <h2>Your shows <button class="btn btn-ghost btn-sm" id="newBtn">+ New show</button></h2>
+      <div id="eventList"><div class="center">Loading…</div></div>
+    </div>
+
+  </section>
+</div>
+
+<!-- event editor sheet -->
+<div class="modal hidden" id="evModal" style="position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px">
+  <div class="card" style="max-width:520px;width:100%">
+    <h2 style="margin:0 0 12px" id="evModalTitle">New show</h2>
+    <form id="evForm">
+      <label for="fTitle">Title</label>
+      <input id="fTitle" type="text" required placeholder="Open Mic Comedy Night" />
+      <div class="row">
+        <div>
+          <label for="fKind">Type</label>
+          <select id="fKind">
+            <option value="standup">Standup</option>
+            <option value="improv">Improv</option>
+            <option value="theatre">Theatre</option>
+            <option value="music">Music</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="fStatus">Tickets</label>
+          <select id="fStatus">
+            <option value="live">On sale</option>
+            <option value="soon">Coming soon</option>
+            <option value="sold">Sold out</option>
+            <option value="free">Free entry</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div><label for="fVenue">Venue</label><input id="fVenue" type="text" placeholder="Comedy Lounge" /></div>
+        <div><label for="fCity">City</label><input id="fCity" type="text" placeholder="Lisbon" /></div>
+      </div>
+      <div class="row">
+        <div><label for="fDate">Date &amp; time</label><input id="fDate" type="datetime-local" required /></div>
+        <div><label for="fPrice">Price (€)</label><input id="fPrice" type="number" min="0" step="0.5" placeholder="8" /></div>
+      </div>
+      <label for="fUrl">Ticket link</label>
+      <input id="fUrl" type="url" placeholder="https://…" />
+      <div style="height:16px"></div>
+      <div class="row">
+        <button class="btn btn-ghost" type="button" id="evCancel"><span>Cancel</span></button>
+        <button class="btn btn-primary" type="submit" id="evSave"><span>Save show</span></button>
+      </div>
+      <div class="msg" id="evMsg"></div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg">Done</span></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  "use strict";
+  var SUPABASE_URL = "https://lqwxqrntxlzytizjapzh.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxxd3hxcm50eGx6eXRpemphcHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3Mjg3NDQsImV4cCI6MjEwMTMwNDc0NH0.orqrk_8hksacqzGk5woBmt3C0gDy_Ya6yl-1E6REKtc";
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  var TZ = "Europe/Lisbon";
+
+  var $ = function(id){ return document.getElementById(id); };
+  var toastEl=$("toast"), toastMsg=$("toastMsg"), tt;
+  function toast(m){ toastMsg.textContent=m; toastEl.classList.add("show"); clearTimeout(tt); tt=setTimeout(function(){toastEl.classList.remove("show");},2200); }
+  function show(el){ el.classList.remove("hidden"); }
+  function hide(el){ el.classList.add("hidden"); }
+  function msg(el,text,kind){ el.textContent=text; el.className="msg "+(kind||"err"); if(!text) el.className="msg"; }
+
+  var STATE = { user:null, artist:null, editing:null };
+
+  // ---------- auth ----------
+  var mode="signin";
+  function paintAuthMode(){
+    $("authTitle").textContent = mode==="signin" ? "Sign in to your Studio" : "Create your Studio account";
+    $("authBtn").querySelector("span").textContent = mode==="signin" ? "Sign in" : "Create account";
+    $("authPass").autocomplete = mode==="signin" ? "current-password" : "new-password";
+    $("toggleTxt").textContent = mode==="signin" ? "New here?" : "Already have an account?";
+    $("toggleBtn").textContent = mode==="signin" ? "Create an account" : "Sign in";
+    msg($("authMsg"),"");
+  }
+  $("toggleBtn").addEventListener("click", function(){ mode = mode==="signin"?"signup":"signin"; paintAuthMode(); });
+
+  $("authForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var email=$("authEmail").value.trim(), pass=$("authPass").value;
+    var btn=$("authBtn"); btn.disabled=true;
+    var op = mode==="signin"
+      ? sb.auth.signInWithPassword({email:email,password:pass})
+      : sb.auth.signUp({email:email,password:pass});
+    op.then(function(res){
+      btn.disabled=false;
+      if(res.error){ msg($("authMsg"),res.error.message,"err"); return; }
+      if(!res.data.session){ msg($("authMsg"),"Check your email to confirm your account, then sign in.","ok"); mode="signin"; paintAuthMode(); return; }
+      boot(res.data.session.user);
+    });
+  });
+
+  $("who").innerHTML = "";
+  function renderWho(){
+    if(STATE.user){
+      $("who").innerHTML = '<span>'+STATE.user.email+'</span>';
+      var b=document.createElement("button"); b.className="link"; b.textContent="Sign out";
+      b.onclick=function(){ sb.auth.signOut().then(function(){ location.reload(); }); };
+      $("who").appendChild(b);
+    } else { $("who").innerHTML=""; }
+  }
+
+  // ---------- boot / routing ----------
+  function boot(user){
+    STATE.user = user; renderWho();
+    hide($("authView")); show($("appView"));
+    sb.from("artists").select("*").eq("owner_id", user.id).maybeSingle().then(function(res){
+      if(res.error){ toast("Couldn't load your profile"); console.error(res.error); return; }
+      if(!res.data){ hide($("dashboard")); show($("profileCreate")); return; }
+      STATE.artist = res.data;
+      show($("dashboard")); hide($("profileCreate"));
+      $("dashName").textContent = res.data.name;
+      $("publicLink").href = "index.html?u=" + encodeURIComponent(res.data.handle);
+      loadEvents();
+    });
+  }
+
+  // ---------- profile create ----------
+  $("profileForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var facets = Array.prototype.slice.call(document.querySelectorAll("#profileForm .checks input:checked")).map(function(c){return c.value;});
+    var row = {
+      owner_id: STATE.user.id,
+      name: $("pName").value.trim(),
+      handle: $("pHandle").value.trim().toLowerCase(),
+      city: $("pCity").value.trim() || null,
+      bio: $("pBio").value.trim() || null,
+      facets: facets
+    };
+    sb.from("artists").insert(row).select().single().then(function(res){
+      if(res.error){
+        msg($("profileMsg"), res.error.code==="23505" ? "That handle is taken — try another." : res.error.message, "err");
+        return;
+      }
+      STATE.artist = res.data; toast("Profile created 🎭"); boot(STATE.user);
+    });
+  });
+
+  // ---------- events ----------
+  function fmtDate(iso, part){
+    var opt = part==="d" ? {day:"2-digit",timeZone:TZ} : part==="m" ? {month:"short",timeZone:TZ}
+            : {weekday:"short",day:"2-digit",month:"short",timeZone:TZ};
+    return new Date(iso).toLocaleDateString("en-GB", opt);
+  }
+  function fmtTime(iso){ return new Date(iso).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",timeZone:TZ}); }
+
+  function loadEvents(){
+    var el=$("eventList"); el.innerHTML='<div class="center">Loading…</div>';
+    sb.from("events").select("*").eq("created_by", STATE.user.id).order("starts_at",{ascending:true}).then(function(res){
+      if(res.error){ el.innerHTML='<div class="center">Couldn’t load shows.</div>'; console.error(res.error); return; }
+      var evs = res.data||[];
+      if(!evs.length){ el.innerHTML='<div class="center">No shows yet. Add your first one ↑</div>'; return; }
+      var now=Date.now();
+      el.innerHTML = evs.map(function(ev){
+        var past = new Date(ev.starts_at).getTime() < now;
+        return '<div class="ev">'+
+          '<div class="d"><b>'+fmtDate(ev.starts_at,"d")+'</b><span>'+fmtDate(ev.starts_at,"m")+'</span></div>'+
+          '<div class="info"><div class="t">'+esc(ev.title)+'</div>'+
+            '<div class="m">'+fmtTime(ev.starts_at)+' · '+esc([ev.venue,ev.city].filter(Boolean).join(" · ")||"—")+
+            ' · <span class="badge'+(past?" past":"")+'">'+(past?"past":ev.ticket_status)+'</span></div></div>'+
+          '<div class="acts">'+
+            '<button class="btn btn-ghost btn-sm" data-edit="'+ev.id+'">Edit</button>'+
+            '<button class="btn btn-danger btn-sm" data-del="'+ev.id+'">✕</button>'+
+          '</div></div>';
+      }).join("");
+      Array.prototype.forEach.call(el.querySelectorAll("[data-edit]"), function(b){
+        b.onclick=function(){ openEditor(evs.filter(function(e){return e.id===b.getAttribute("data-edit");})[0]); };
+      });
+      Array.prototype.forEach.call(el.querySelectorAll("[data-del]"), function(b){
+        b.onclick=function(){ delEvent(b.getAttribute("data-del")); };
+      });
+    });
+  }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+
+  function delEvent(id){
+    if(!confirm("Delete this show? This cannot be undone.")) return;
+    sb.from("events").delete().eq("id", id).then(function(res){
+      if(res.error){ toast("Couldn't delete"); console.error(res.error); return; }
+      toast("Show deleted"); loadEvents();
+    });
+  }
+
+  // ---------- event editor ----------
+  var evModal=$("evModal");
+  function toLocalInput(iso){
+    // format an ISO instant into a value for <input type=datetime-local> in local tz
+    var d=new Date(iso); var pad=function(n){return String(n).padStart(2,"0");};
+    return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());
+  }
+  function openEditor(ev){
+    STATE.editing = ev || null;
+    $("evModalTitle").textContent = ev ? "Edit show" : "New show";
+    $("fTitle").value = ev ? ev.title : "";
+    $("fKind").value = ev ? ev.kind : "standup";
+    $("fStatus").value = ev ? ev.ticket_status : "live";
+    $("fVenue").value = ev ? (ev.venue||"") : "";
+    $("fCity").value = ev ? (ev.city||"") : "";
+    $("fDate").value = ev ? toLocalInput(ev.starts_at) : "";
+    $("fPrice").value = ev && ev.price_cents!=null ? (ev.price_cents/100) : "";
+    $("fUrl").value = ev ? (ev.ticket_url||"") : "";
+    msg($("evMsg"),"");
+    show(evModal);
+  }
+  $("newBtn").addEventListener("click", function(){ openEditor(null); });
+  $("evCancel").addEventListener("click", function(){ hide(evModal); });
+  evModal.addEventListener("click", function(e){ if(e.target===evModal) hide(evModal); });
+
+  $("evForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var priceVal = $("fPrice").value;
+    var row = {
+      title: $("fTitle").value.trim(),
+      kind: $("fKind").value,
+      ticket_status: $("fStatus").value,
+      venue: $("fVenue").value.trim() || null,
+      city: $("fCity").value.trim() || null,
+      starts_at: new Date($("fDate").value).toISOString(),
+      ticket_url: $("fUrl").value.trim() || null,
+      price_cents: priceVal==="" ? null : Math.round(parseFloat(priceVal)*100)
+    };
+    var btn=$("evSave"); btn.disabled=true;
+    if(STATE.editing){
+      sb.from("events").update(row).eq("id", STATE.editing.id).then(function(res){
+        btn.disabled=false;
+        if(res.error){ msg($("evMsg"),res.error.message,"err"); return; }
+        hide(evModal); toast("Show updated ✓"); loadEvents();
+      });
+    } else {
+      row.created_by = STATE.user.id;
+      sb.from("events").insert(row).select().single().then(function(res){
+        if(res.error){ btn.disabled=false; msg($("evMsg"),res.error.message,"err"); return; }
+        // link the event to my artist profile (the collaborative table)
+        sb.from("event_artists").insert({event_id:res.data.id, artist_id:STATE.artist.id, role:"headliner", can_edit:true}).then(function(r2){
+          btn.disabled=false;
+          if(r2.error){ msg($("evMsg"),"Show saved but linking failed: "+r2.error.message,"err"); return; }
+          hide(evModal); toast("Show published 🎉"); loadEvents();
+        });
+      });
+    }
+  });
+
+  // ---------- start ----------
+  paintAuthMode();
+  sb.auth.getSession().then(function(res){
+    if(res.data.session){ boot(res.data.session.user); }
+    else { show($("authView")); }
+  });
+})();
+</script>
+</body>
+</html>
