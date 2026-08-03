@@ -50,7 +50,6 @@
     -webkit-font-smoothing:antialiased;
     text-rendering:optimizeLegibility;
     min-height:100vh;
-    /* faint spotlight backdrop */
     background-image:
       radial-gradient(120% 80% at 50% -10%, rgba(255,86,56,.18), transparent 55%),
       radial-gradient(90% 60% at 90% 8%, rgba(255,194,75,.08), transparent 50%);
@@ -58,17 +57,12 @@
   }
   .app{max-width:var(--maxw);margin:0 auto;padding:0 16px 96px;position:relative}
 
-  /* ---------- brand bar ---------- */
-  .brandbar{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:14px 2px 10px;
-  }
+  .brandbar{display:flex;align-items:center;justify-content:space-between;padding:14px 2px 10px}
   .brand{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:-.02em;font-size:15px}
   .brand .dot{
     width:22px;height:22px;border-radius:7px;
     background:linear-gradient(140deg,var(--accent),#ff8a5c);
-    display:grid;place-items:center;font-size:13px;
-    box-shadow:0 3px 10px rgba(255,86,56,.4);
+    display:grid;place-items:center;font-size:13px;box-shadow:0 3px 10px rgba(255,86,56,.4);
   }
   .brand small{color:var(--muted);font-weight:500}
   .share{
@@ -79,15 +73,12 @@
   .share:hover{background:var(--surface-2);border-color:var(--muted-2)}
   .share svg{width:17px;height:17px}
 
-  /* ---------- profile header ---------- */
   .profile{text-align:center;padding:10px 8px 4px}
   .avatar{
     width:104px;height:104px;border-radius:50%;margin:0 auto 14px;
     background:linear-gradient(150deg,#3a2b4d,#5a2f2a);
     display:grid;place-items:center;font-size:40px;font-weight:700;
-    border:2px solid rgba(255,255,255,.16);
-    box-shadow:0 12px 34px rgba(0,0,0,.5);
-    position:relative;
+    border:2px solid rgba(255,255,255,.16);box-shadow:0 12px 34px rgba(0,0,0,.5);position:relative;
   }
   .status{
     display:inline-flex;align-items:center;gap:7px;margin-top:10px;
@@ -115,7 +106,6 @@
   .meta{display:flex;gap:16px;justify-content:center;margin-top:14px;color:var(--muted);font-size:13px}
   .meta b{color:var(--text);font-weight:700}
 
-  /* ---------- follow ---------- */
   .follow-row{display:flex;gap:10px;margin:18px 2px 6px}
   .btn{
     flex:1;border:none;cursor:pointer;font:inherit;font-weight:700;font-size:15px;
@@ -138,11 +128,7 @@
   }
   .hint svg{width:13px;height:13px;opacity:.8}
 
-  /* ---------- filter ---------- */
-  .filters{
-    display:flex;gap:8px;overflow-x:auto;padding:22px 2px 6px;scrollbar-width:none;
-    -webkit-overflow-scrolling:touch;
-  }
+  .filters{display:flex;gap:8px;overflow-x:auto;padding:22px 2px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .filters::-webkit-scrollbar{display:none}
   .chip{
     white-space:nowrap;cursor:pointer;font:inherit;font-size:13px;font-weight:600;
@@ -152,24 +138,19 @@
   .chip:hover{color:var(--text);border-color:var(--line-strong)}
   .chip.active{background:var(--text);color:#111;border-color:var(--text)}
 
-  /* ---------- section label ---------- */
   .sec-label{
     display:flex;align-items:center;gap:10px;margin:22px 2px 12px;
     color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
   }
   .sec-label::after{content:"";flex:1;height:1px;background:var(--line)}
 
-  /* ---------- event card ---------- */
   .event{
     display:flex;gap:14px;background:var(--surface);border:1px solid var(--line);
     border-radius:var(--radius);padding:14px;margin-bottom:12px;position:relative;
     transition:border-color .15s, transform .12s;
   }
   .event:hover{border-color:var(--line-strong)}
-  .event.collab{
-    border-color:rgba(255,194,75,.28);
-    background:linear-gradient(180deg,rgba(255,194,75,.06),var(--surface));
-  }
+  .event.collab{border-color:rgba(255,194,75,.28);background:linear-gradient(180deg,rgba(255,194,75,.06),var(--surface))}
   .datebox{
     flex:0 0 54px;text-align:center;border-radius:var(--radius-sm);
     background:var(--surface-2);border:1px solid var(--line);padding:9px 4px;height:fit-content;
@@ -216,16 +197,13 @@
   .bell svg{width:17px;height:17px}
   .bell.on{background:var(--accent-2);color:#3a2600;border-color:var(--accent-2)}
 
-  /* ---------- past ---------- */
   .past .event{opacity:.5}
   .past .datebox .m{color:var(--muted)}
 
-  /* ---------- footer ---------- */
   footer{text-align:center;margin-top:34px;color:var(--muted-2);font-size:12px;line-height:1.6}
   footer .mk{color:var(--muted);font-weight:600}
   footer a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line-strong)}
 
-  /* ---------- toast ---------- */
   .toast{
     position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
     background:var(--text);color:#141414;font-weight:600;font-size:13px;
@@ -238,40 +216,33 @@
 
   .empty{text-align:center;color:var(--muted-2);font-size:14px;padding:30px 0}
 
-  @media (max-width:360px){
-    .btn{font-size:14px}
-    h1{font-size:22px}
-  }
+  @media (max-width:360px){ .btn{font-size:14px} h1{font-size:22px} }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- brand -->
   <div class="brandbar">
-    <div class="brand">
-      <span class="dot">🎭</span> Cartaz <small>&nbsp;· beta</small>
-    </div>
+    <div class="brand"><span class="dot">🎭</span> Cartaz <small>&nbsp;· beta</small></div>
     <button class="share" id="shareBtn" aria-label="Share">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
     </button>
   </div>
 
-  <!-- profile -->
   <section class="profile">
     <div class="avatar">MT</div>
-    <h1>Miguel Tavares</h1>
-    <div class="handle">cartaz.pt/migueltavares</div>
-    <div class="status"><span class="pulse"></span> 2 shows this week</div>
+    <h1>&nbsp;</h1>
+    <div class="handle">&nbsp;</div>
+    <div class="status"><span class="pulse"></span> &nbsp;</div>
     <div class="facet-tags">
       <span>🎤 Standup</span>
       <span>🎭 Improv</span>
       <span>🎬 Theatre</span>
     </div>
-    <p class="bio">Comedian and improviser in Lisbon. One person, three stages — every date in one place.</p>
+    <p class="bio">&nbsp;</p>
     <div class="meta">
-      <span><b id="followCount">1,248</b> followers</span>
-      <span><b>6</b> upcoming shows</span>
+      <span><b id="followCount">–</b> followers</span>
+      <span><b id="upcomingCount">–</b> upcoming shows</span>
     </div>
 
     <div class="follow-row">
@@ -289,19 +260,16 @@
     </p>
   </section>
 
-  <!-- filters -->
   <div class="filters" id="filters">
     <button class="chip active" data-f="all">All</button>
     <button class="chip" data-f="standup">🎤 Standup</button>
     <button class="chip" data-f="improv">🎭 Improv</button>
-    <button class="chip" data-f="teatro">🎬 Theatre</button>
+    <button class="chip" data-f="theatre">🎬 Theatre</button>
   </div>
 
-  <!-- upcoming -->
   <div class="sec-label">Upcoming shows</div>
-  <div id="eventList"></div>
+  <div id="eventList"><div class="empty">Loading shows…</div></div>
 
-  <!-- past -->
   <div class="sec-label">Past shows</div>
   <div class="past" id="pastList"></div>
 
@@ -318,36 +286,16 @@
   <span id="toastMsg">Done</span>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
   "use strict";
 
-  // ---- mock data ----
-  var events = [
-    { id:"e1", day:"17", month:"Jul", wd:"Thu", kind:"standup", kindLabel:"Standup",
-      title:"Open Mic Comedy Night", venue:"Comedy Lounge · Lisbon", ticket:"live", price:"€8" },
-    { id:"e2", day:"19", month:"Jul", wd:"Sat", kind:"improv", kindLabel:"Improv · Shared event",
-      title:"The Improbables — Improv Match", venue:"Teatro do Bairro · Lisbon",
-      collab:[{i:"MT",c:"#5a2f2a"},{i:"RS",c:"#2f4a5a"},{i:"JP",c:"#4a2f5a"},{i:"+2",c:"#333"}],
-      collabNote:"Shared by 5 artists", ticket:"live", price:"€12" },
-    { id:"e3", day:"24", month:"Jul", wd:"Thu", kind:"standup", kindLabel:"Standup",
-      title:"Work in Progress — new material", venue:"Musicbox · Lisbon", ticket:"live", price:"€6" },
-    { id:"e4", day:"02", month:"Aug", wd:"Sat", kind:"teatro", kindLabel:"Theatre",
-      title:"“Family Lunch” — Premiere", venue:"Teatro Maria Matos · Lisbon", ticket:"soon" },
-    { id:"e5", day:"09", month:"Aug", wd:"Sat", kind:"improv", kindLabel:"Improv · Shared event",
-      title:"Improv by Candlelight (Porto edition)", venue:"Teatro Sá da Bandeira · Porto",
-      collab:[{i:"MT",c:"#5a2f2a"},{i:"AC",c:"#2f5a3a"},{i:"RS",c:"#2f4a5a"}],
-      collabNote:"Shared by 3 artists", ticket:"live", price:"€12" },
-    { id:"e6", day:"23", month:"Aug", wd:"Sat", kind:"standup", kindLabel:"Standup",
-      title:"Summer Special — 45 min solo", venue:"Casino Estoril · Cascais", ticket:"sold" }
-  ];
-
-  var past = [
-    { id:"p1", day:"28", month:"Jun", wd:"Sat", kind:"improv", kindLabel:"Improv",
-      title:"The Improbables — Season Finale", venue:"Teatro do Bairro · Lisbon" },
-    { id:"p2", day:"14", month:"Jun", wd:"Sat", kind:"standup", kindLabel:"Standup",
-      title:"Porto Comedy Gala", venue:"Coliseu · Porto" }
-  ];
+  // Public anon key — safe in the frontend; reads are gated by Row-Level Security.
+  var SUPABASE_URL = "https://lqwxqrntxlzytizjapzh.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxxd3hxcm50eGx6eXRpemphcHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3Mjg3NDQsImV4cCI6MjEwMTMwNDc0NH0.orqrk_8hksacqzGk5woBmt3C0gDy_Ya6yl-1E6REKtc";
+  var HANDLE = "migueltavares";
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   var icons = {
     pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
@@ -370,26 +318,71 @@
     toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2400);
   }
 
-  // ---- render events ----
-  function collabHTML(ev){
-    if(!ev.collab) return "";
-    var s = ev.collab.map(function(a){
-      return '<div class="a" style="background:'+a.c+'">'+a.i+'</div>';
-    }).join("");
-    return '<div class="collab-row"><div class="stack">'+s+'</div>'+
-           '<span class="collab-note">'+ev.collabNote+'</span></div>';
+  // ---------- data mapping ----------
+  var TZ = "Europe/Lisbon";
+  var KIND_LABEL = {standup:"Standup", improv:"Improv", theatre:"Theatre", music:"Music", other:"Live"};
+  var AV_COLORS = ["#5a2f2a","#2f4a5a","#4a2f5a","#2f5a3a","#5a4a2f","#3a2f5a"];
+  function initials(name){
+    var p = String(name||"").trim().split(/\s+/);
+    return (((p[0]||"")[0]||"") + ((p[1]||"")[0]||"")).toUpperCase();
+  }
+  function colorFor(key){
+    var h=0; key=String(key);
+    for(var i=0;i<key.length;i++) h=(h*31+key.charCodeAt(i))>>>0;
+    return AV_COLORS[h % AV_COLORS.length];
+  }
+  function priceStr(ev){
+    if(ev.price_cents==null) return null;
+    var sym = ev.currency==="EUR" ? "€" : (ev.currency+" ");
+    var v = ev.price_cents/100;
+    return sym + (v % 1 === 0 ? v.toFixed(0) : v.toFixed(2));
+  }
+  function normalize(ev){
+    var d = new Date(ev.starts_at);
+    var lineup = (ev.lineup||[]);
+    var n = lineup.length;
+    var collab=null, collabNote=null;
+    if(n>1){
+      var show = lineup.slice(0,4).map(function(l){
+        var nm=(l.artist&&l.artist.name)||"?";
+        return {i:initials(nm)||"?", c:colorFor((l.artist&&l.artist.handle)||nm)};
+      });
+      if(n>4) show[3]={i:"+"+(n-3), c:"#333"};
+      collab=show; collabNote="Shared by "+n+" artists";
+    }
+    var base = KIND_LABEL[ev.kind]||"Live";
+    return {
+      id: ev.id,
+      day: d.toLocaleDateString("en-GB",{day:"2-digit",timeZone:TZ}),
+      month: d.toLocaleDateString("en-GB",{month:"short",timeZone:TZ}),
+      wd: d.toLocaleDateString("en-GB",{weekday:"short",timeZone:TZ}),
+      kind: ev.kind,
+      kindLabel: n>1 ? base+" · Shared event" : base,
+      title: ev.title,
+      venue: [ev.venue, ev.city].filter(Boolean).join(" · "),
+      ticket: ev.ticket_status,
+      price: priceStr(ev),
+      starts_at: ev.starts_at,
+      collab: collab, collabNote: collabNote
+    };
   }
 
+  // ---------- rendering ----------
+  function collabHTML(ev){
+    if(!ev.collab) return "";
+    var s = ev.collab.map(function(a){ return '<div class="a" style="background:'+a.c+'">'+a.i+'</div>'; }).join("");
+    return '<div class="collab-row"><div class="stack">'+s+'</div><span class="collab-note">'+ev.collabNote+'</span></div>';
+  }
   function ticketHTML(ev){
     if(ev.ticket==="soon") return '<span class="ticket sold">Tickets soon</span>';
     if(ev.ticket==="sold") return '<span class="ticket sold">Sold out</span>';
+    if(ev.ticket==="free") return '<a class="ticket" href="#" data-noop="1">'+icons.ticket+' Free entry</a>';
     return '<a class="ticket" href="#" data-noop="1">'+icons.ticket+' Tickets'+(ev.price?' · '+ev.price:'')+'</a>';
   }
-
   function eventHTML(ev, isPast){
     var reminders = LS.get("reminders", {});
     var on = reminders[ev.id] ? " on" : "";
-    var kindClass = ev.kind==="improv" ? "improv" : (ev.kind==="teatro" ? "teatro" : "");
+    var kindClass = ev.kind==="improv" ? "improv" : (ev.kind==="theatre" ? "teatro" : "");
     return ''+
     '<article class="event '+(ev.collab?'collab':'')+'" data-kind="'+ev.kind+'">'+
       '<div class="datebox"><div class="d">'+ev.day+'</div><div class="m">'+ev.month+'</div><div class="wd">'+ev.wd+'</div></div>'+
@@ -405,19 +398,21 @@
     '</article>';
   }
 
+  var UPCOMING=[], PAST=[], currentFilter="all", BASE_FOLLOWERS=0;
+
   function renderUpcoming(filter){
     var list = document.getElementById("eventList");
     var f = filter||"all";
-    var shown = events.filter(function(e){ return f==="all" || e.kind===f; });
+    var shown = UPCOMING.filter(function(e){ return f==="all" || e.kind===f; });
     if(!shown.length){ list.innerHTML = '<div class="empty">No shows in this category — yet. 👀</div>'; return; }
     list.innerHTML = shown.map(function(e){ return eventHTML(e,false); }).join("");
     bindBells();
   }
-
   function renderPast(){
-    document.getElementById("pastList").innerHTML = past.map(function(e){ return eventHTML(e,true); }).join("");
+    var el = document.getElementById("pastList");
+    el.innerHTML = PAST.length ? PAST.map(function(e){ return eventHTML(e,true); }).join("")
+                               : '<div class="empty">Nothing yet.</div>';
   }
-
   function bindBells(){
     Array.prototype.forEach.call(document.querySelectorAll("[data-bell]"), function(btn){
       btn.addEventListener("click", function(){
@@ -431,16 +426,14 @@
     });
   }
 
-  // ---- follow ----
   var followBtn = document.getElementById("followBtn");
   var followCount = document.getElementById("followCount");
-  var BASE = 1248;
   function fmt(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
   function paintFollow(){
     var f = LS.get("following", false);
     followBtn.classList.toggle("following", f);
     followBtn.querySelector("span").textContent = f ? "Following" : "Follow";
-    followCount.textContent = fmt(BASE + (f?1:0));
+    followCount.textContent = fmt(BASE_FOLLOWERS + (f?1:0));
   }
   followBtn.addEventListener("click", function(){
     var f = !LS.get("following", false);
@@ -448,18 +441,15 @@
     paintFollow();
     if(f) toast("Following Miguel Tavares — we'll keep you posted 🎭");
   });
-
   document.getElementById("notifyAll").addEventListener("click", function(){
     var reminders = {};
-    events.forEach(function(e){ reminders[e.id]=true; });
+    UPCOMING.forEach(function(e){ reminders[e.id]=true; });
     LS.set("reminders", reminders);
     if(!LS.get("following",false)){ LS.set("following", true); paintFollow(); }
     renderUpcoming(currentFilter);
     toast("Subscribed to all upcoming shows 🔔");
   });
 
-  // ---- filters ----
-  var currentFilter = "all";
   document.getElementById("filters").addEventListener("click", function(e){
     var chip = e.target.closest(".chip");
     if(!chip) return;
@@ -469,9 +459,8 @@
     renderUpcoming(currentFilter);
   });
 
-  // ---- share / claim ----
   document.getElementById("shareBtn").addEventListener("click", function(){
-    var url = "https://cartaz.pt/migueltavares";
+    var url = location.href;
     if(navigator.share){ navigator.share({title:"Miguel Tavares on Cartaz", url:url}).catch(function(){}); }
     else if(navigator.clipboard){ navigator.clipboard.writeText(url); toast("Link copied ✓"); }
     else { toast(url); }
@@ -480,17 +469,63 @@
     ev.preventDefault();
     toast("Soon you'll be able to create yours 😉");
   });
-
-  // catch demo ticket clicks
   document.addEventListener("click", function(e){
     var t = e.target.closest('[data-noop]');
     if(t){ e.preventDefault(); toast("Demo — this would open ticketing 🎟️"); }
   });
 
-  // init
-  paintFollow();
-  renderUpcoming("all");
-  renderPast();
+  function updateStatusPill(){
+    var el = document.querySelector(".status");
+    var now = Date.now(), wk = now + 7*864e5;
+    var n = UPCOMING.filter(function(e){ var t=new Date(e.starts_at).getTime(); return t>=now && t<=wk; }).length;
+    if(n<=0){ el.style.display="none"; return; }
+    el.style.display="";
+    el.innerHTML = '<span class="pulse"></span> '+n+' show'+(n>1?'s':'')+' this week';
+  }
+
+  // ---------- load from Supabase ----------
+  function load(){
+    var list = document.getElementById("eventList");
+    sb.from("artists").select("*").eq("handle", HANDLE).single()
+      .then(function(res){
+        if(res.error || !res.data) throw (res.error || new Error("artist not found"));
+        var artist = res.data;
+        document.querySelector(".avatar").textContent = initials(artist.name) || "★";
+        document.querySelector("h1").textContent = artist.name;
+        document.querySelector(".handle").textContent = "cartaz.pt/" + artist.handle;
+        if(artist.bio) document.querySelector(".bio").textContent = artist.bio;
+        document.title = "Cartaz · " + artist.name;
+
+        var evP = sb.from("event_artists")
+          .select("event:events(id,title,kind,venue,city,starts_at,ticket_url,ticket_status,price_cents,currency,lineup:event_artists(role,artist:artists(name,handle)))")
+          .eq("artist_id", artist.id);
+        var cntP = sb.from("artist_stats").select("followers").eq("artist_id", artist.id).maybeSingle();
+        return Promise.all([evP, cntP]);
+      })
+      .then(function(out){
+        var evRes = out[0], cntRes = out[1];
+        if(evRes.error) throw evRes.error;
+        BASE_FOLLOWERS = (cntRes.data && cntRes.data.followers) || 0;
+
+        var evs = (evRes.data||[]).map(function(x){ return x.event; }).filter(Boolean);
+        var norm = evs.map(normalize).sort(function(a,b){ return new Date(a.starts_at)-new Date(b.starts_at); });
+        var now = Date.now();
+        UPCOMING = norm.filter(function(e){ return new Date(e.starts_at).getTime() >= now; });
+        PAST     = norm.filter(function(e){ return new Date(e.starts_at).getTime() <  now; }).reverse();
+
+        document.getElementById("upcomingCount").textContent = UPCOMING.length;
+        paintFollow();
+        updateStatusPill();
+        renderUpcoming(currentFilter);
+        renderPast();
+      })
+      .catch(function(err){
+        console.error("Cartaz load error:", err);
+        list.innerHTML = '<div class="empty">Couldn’t load shows right now. Please refresh.</div>';
+      });
+  }
+
+  load();
 })();
 </script>
 </body>
