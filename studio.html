@@ -289,7 +289,7 @@
       STATE.artist = res.data;
       show($("dashboard")); hide($("profileCreate"));
       $("dashName").textContent = res.data.name;
-      var pubUrl = new URL("index.html?u=" + encodeURIComponent(res.data.handle), location.href).href;
+      var pubUrl = new URL(encodeURIComponent(res.data.handle), location.href).href;
       $("publicLink").href = pubUrl;
       $("publicUrl").value = pubUrl;
       loadEvents();

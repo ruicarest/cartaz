@@ -335,7 +335,22 @@
   // Public anon key — safe in the frontend; reads are gated by Row-Level Security.
   var SUPABASE_URL = "https://lqwxqrntxlzytizjapzh.supabase.co";
   var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxxd3hxcm50eGx6eXRpemphcHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3Mjg3NDQsImV4cCI6MjEwMTMwNDc0NH0.orqrk_8hksacqzGk5woBmt3C0gDy_Ya6yl-1E6REKtc";
-  var HANDLE = (new URLSearchParams(location.search).get("u") || "migueltavares").toLowerCase();
+  function getHandle(){
+    var q = new URLSearchParams(location.search).get("u");
+    if(q) return q.toLowerCase();
+    var seg = location.pathname.split("/").filter(Boolean).pop() || "";
+    if(seg && seg.indexOf(".") === -1 && seg !== "cartaz") return decodeURIComponent(seg).toLowerCase();
+    return "migueltavares";
+  }
+  var HANDLE = getHandle();
+  // If we arrived via ?u=handle (e.g. from the 404 fallback), show the clean /base/handle URL.
+  (function(){
+    var u = new URLSearchParams(location.search).get("u");
+    if(u){
+      var base = location.pathname.replace(/index\.html$/, "");
+      try{ history.replaceState(null, "", base + encodeURIComponent(u) + location.hash); }catch(e){}
+    }
+  })();
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   var icons = {

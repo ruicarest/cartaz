@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gigszio</title>
+<meta name="robots" content="noindex" />
+<script>
+  // GitHub Pages serves this file for any unknown path (e.g. /cartaz/migueltavares).
+  // Turn that path into a handle and hand off to the app; index.html restores the clean URL.
+  (function(){
+    var l = location;
+    var i = l.pathname.indexOf("/cartaz/");
+    var base = i >= 0 ? l.pathname.slice(0, i + "/cartaz/".length) : "/";
+    var seg = l.pathname.slice(base.length).replace(/\/+$/, "");
+    if(seg && seg !== "index.html"){
+      l.replace(base + "index.html?u=" + encodeURIComponent(seg) + l.hash);
+    } else {
+      l.replace(base);
+    }
+  })();
+</script>
+</head>
+<body></body>
+</html>
