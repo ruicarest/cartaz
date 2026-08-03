@@ -174,6 +174,11 @@
   .ev-title{font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.25}
   .ev-venue{color:var(--muted);font-size:13px;margin-top:3px;display:flex;align-items:center;gap:5px}
   .ev-venue svg{width:12px;height:12px;flex:0 0 auto;opacity:.7}
+  .venue-link{display:inline-flex;align-items:center;gap:5px;color:var(--muted);text-decoration:none;min-width:0}
+  .venue-link:hover{color:var(--accent-2)}
+  .venue-copy{flex:0 0 auto;background:none;border:none;color:var(--muted-2);cursor:pointer;padding:2px;display:grid;place-items:center;border-radius:6px}
+  .venue-copy:hover{color:var(--text)}
+  .venue-copy svg{width:13px;height:13px;opacity:1}
 
   .collab-row{display:flex;align-items:center;gap:8px;margin-top:10px}
   .stack{display:flex}
@@ -397,7 +402,8 @@
   var icons = {
     pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
     ticket:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4Z"/><path d="M13 6v12" stroke-dasharray="2 2"/></svg>',
-    bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>'
+    bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
+    copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>'
   };
 
   var LS = {
@@ -486,6 +492,7 @@
     var reminders = LS.get("reminders", {});
     var on = reminders[ev.id] ? " on" : "";
     var kindClass = ev.kind==="improv" ? "improv" : (ev.kind==="theatre" ? "teatro" : "");
+    var mapsUrl = ev.venue ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(String(ev.venue).replace(/\s*·\s*/g, ", ")) : "";
     return ''+
     '<article class="event '+(ev.collab?'collab':'')+'" data-kind="'+esc(ev.kind)+'">'+
       (ev.image ? '<img class="ev-poster" src="'+esc(ev.image)+'" alt="" loading="lazy" />' : '')+
@@ -494,7 +501,10 @@
         '<div class="ev-body">'+
           '<div class="ev-kind '+kindClass+'">'+esc(ev.kindLabel)+'</div>'+
           '<div class="ev-title">'+esc(ev.title)+'</div>'+
-          '<div class="ev-venue">'+icons.pin+esc(ev.venue)+'</div>'+
+          '<div class="ev-venue">'+
+            '<a class="venue-link" href="'+esc(mapsUrl)+'" target="_blank" rel="noopener" title="Open in Maps">'+icons.pin+esc(ev.venue)+'</a>'+
+            '<button class="venue-copy" type="button" data-copy="'+esc(ev.venue)+'" title="Copy location" aria-label="Copy location">'+icons.copy+'</button>'+
+          '</div>'+
           collabHTML(ev)+
           (isPast ? '' :
             '<div class="ev-actions">'+ticketHTML(ev)+
@@ -703,8 +713,14 @@
     }).catch(function(err){ console.error("story", err); toast("Couldn't build the story image"); });
   });
   document.addEventListener("click", function(e){
-    var t = e.target.closest('[data-noop]');
-    if(t){ e.preventDefault(); toast("Demo — this would open ticketing 🎟️"); }
+    var cp = e.target.closest('[data-copy]');
+    if(cp){
+      e.preventDefault();
+      var v = cp.getAttribute("data-copy");
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(v).then(function(){ toast("Location copied ✓"); }).catch(function(){ toast(v); });
+      } else { toast(v); }
+    }
   });
 
   function updateStatusPill(){

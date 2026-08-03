@@ -276,8 +276,12 @@
         <div><label for="fCity">City</label><input id="fCity" type="text" placeholder="Lisbon" /></div>
       </div>
       <div class="row">
-        <div><label for="fDate">Date &amp; time</label><input id="fDate" type="datetime-local" required /></div>
+        <div><label for="fDate">Date</label><input id="fDate" type="date" required /></div>
+        <div><label for="fTime">Time</label><input id="fTime" type="time" required /></div>
+      </div>
+      <div class="row">
         <div><label for="fPrice">Price (€)</label><input id="fPrice" type="number" min="0" step="0.5" placeholder="8" /></div>
+        <div></div>
       </div>
       <label for="fUrl">Ticket link</label>
       <input id="fUrl" type="url" placeholder="https://…" />
@@ -642,7 +646,14 @@
     $("fStatus").value = ev ? ev.ticket_status : "live";
     $("fVenue").value = ev ? (ev.venue||"") : "";
     $("fCity").value = ev ? (ev.city||"") : "";
-    $("fDate").value = ev ? toLocalInput(ev.starts_at) : "";
+    if(ev){ var _d=new Date(ev.starts_at), _p=function(n){return String(n).padStart(2,"0");};
+      $("fDate").value=_d.getFullYear()+"-"+_p(_d.getMonth()+1)+"-"+_p(_d.getDate());
+      $("fTime").value=_p(_d.getHours())+":"+_p(_d.getMinutes());
+    } else {
+      var _n=new Date(), _pn=function(n){return String(n).padStart(2,"0");};
+      $("fDate").value=_n.getFullYear()+"-"+_pn(_n.getMonth()+1)+"-"+_pn(_n.getDate());
+      $("fTime").value="21:00";
+    }
     $("fPrice").value = ev && ev.price_cents!=null ? (ev.price_cents/100) : "";
     $("fUrl").value = ev ? (ev.ticket_url||"") : "";
     $("fBooking").value = ev ? (ev.booking_note||"") : "";
@@ -680,7 +691,7 @@
       ticket_status: $("fStatus").value,
       venue: $("fVenue").value.trim() || null,
       city: $("fCity").value.trim() || null,
-      starts_at: new Date($("fDate").value).toISOString(),
+      starts_at: new Date($("fDate").value + "T" + ($("fTime").value||"21:00")).toISOString(),
       ticket_url: $("fUrl").value.trim() || null,
       booking_note: $("fBooking").value.trim() || null,
       image_url: evPosterUrl || null,
