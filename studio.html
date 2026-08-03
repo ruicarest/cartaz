@@ -54,6 +54,16 @@
   .btn-ghost{background:var(--surface-2);border:1px solid var(--line-strong);color:var(--text)}
   .btn-sm{font-size:13px;padding:8px 12px;border-radius:10px}
   .btn-danger{background:transparent;border:1px solid rgba(226,75,74,.4);color:#f09595}
+  .btn-google{background:#fff;color:#1f1f1f;width:100%;border:1px solid var(--line-strong)}
+  .btn-google svg{width:18px;height:18px}
+  .divider{display:flex;align-items:center;gap:12px;color:var(--muted-2);font-size:12px;margin:16px 0}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+  .sharebox{background:var(--surface);border:1px solid var(--line-strong);border-radius:14px;padding:12px 14px;margin:10px 0 4px}
+  .share-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-2);margin-bottom:9px}
+  .share-row{display:flex;gap:8px}
+  .share-row input{flex:1;min-width:0;font-size:13px;padding:9px 10px;color:var(--muted)}
+  .share-row .btn{flex:0 0 auto}
+  .share-row a.btn{display:inline-flex;align-items:center;text-decoration:none}
 
   .toggle{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
 
@@ -90,6 +100,11 @@
     <h1 id="authTitle">Sign in to your Studio</h1>
     <p class="sub" id="authSub">Manage your shows and let fans follow you.</p>
     <div class="card">
+      <button class="btn btn-google" id="googleBtn" type="button">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+        <span>Continue with Google</span>
+      </button>
+      <div class="divider">or with email</div>
       <form id="authForm">
         <label for="authEmail">Email</label>
         <input id="authEmail" type="email" autocomplete="email" placeholder="you@email.com" required />
@@ -140,7 +155,14 @@
     <!-- dashboard -->
     <div id="dashboard" class="hidden">
       <h1 id="dashName">&nbsp;</h1>
-      <p class="sub"><a class="link" id="publicLink" target="_blank" rel="noopener">View my public page →</a></p>
+      <div class="sharebox">
+        <div class="share-label">Your public link — share it anywhere</div>
+        <div class="share-row">
+          <input id="publicUrl" readonly aria-label="Your public link" />
+          <button class="btn btn-ghost btn-sm" id="copyBtn" type="button">Copy</button>
+          <a class="btn btn-ghost btn-sm" id="publicLink" target="_blank" rel="noopener">Open</a>
+        </div>
+      </div>
 
       <h2>Your shows <button class="btn btn-ghost btn-sm" id="newBtn">+ New show</button></h2>
       <div id="eventList"><div class="center">Loading…</div></div>
@@ -240,7 +262,7 @@
       btn.disabled=false;
       if(res.error){ msg($("authMsg"),res.error.message,"err"); return; }
       if(!res.data.session){ msg($("authMsg"),"Check your email to confirm your account, then sign in.","ok"); mode="signin"; paintAuthMode(); return; }
-      boot(res.data.session.user);
+      // session present → onAuthStateChange boots us in
     });
   });
 
@@ -264,7 +286,9 @@
       STATE.artist = res.data;
       show($("dashboard")); hide($("profileCreate"));
       $("dashName").textContent = res.data.name;
-      $("publicLink").href = "index.html?u=" + encodeURIComponent(res.data.handle);
+      var pubUrl = new URL("index.html?u=" + encodeURIComponent(res.data.handle), location.href).href;
+      $("publicLink").href = pubUrl;
+      $("publicUrl").value = pubUrl;
       loadEvents();
     });
   }
@@ -357,6 +381,11 @@
     show(evModal);
   }
   $("newBtn").addEventListener("click", function(){ openEditor(null); });
+  $("copyBtn").addEventListener("click", function(){
+    var v = $("publicUrl").value;
+    if(navigator.clipboard){ navigator.clipboard.writeText(v).then(function(){ toast("Link copied ✓"); }); }
+    else { $("publicUrl").select(); try{ document.execCommand("copy"); }catch(e){} toast("Link copied ✓"); }
+  });
   $("evCancel").addEventListener("click", function(){ hide(evModal); });
   evModal.addEventListener("click", function(e){ if(e.target===evModal) hide(evModal); });
 
@@ -396,9 +425,14 @@
 
   // ---------- start ----------
   paintAuthMode();
-  sb.auth.getSession().then(function(res){
-    if(res.data.session){ boot(res.data.session.user); }
-    else { show($("authView")); }
+  $("googleBtn").addEventListener("click", function(){
+    sb.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: location.origin + location.pathname } })
+      .then(function(res){ if(res.error){ msg($("authMsg"), res.error.message, "err"); } });
+  });
+  var booted=false;
+  sb.auth.onAuthStateChange(function(_evt, session){
+    if(session && session.user){ if(!booted){ booted=true; boot(session.user); } }
+    else if(!booted){ show($("authView")); }
   });
 })();
 </script>
