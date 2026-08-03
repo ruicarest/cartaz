@@ -67,15 +67,33 @@
   .share-row input{flex:1;min-width:0;font-size:13px;padding:9px 10px;color:var(--muted)}
   .share-row .btn{flex:0 0 auto}
   .share-row a.btn{display:inline-flex;align-items:center;text-decoration:none}
-  .co-input{display:flex;gap:8px;margin-top:6px}
-  .co-input input{flex:1;min-width:0}
-  .co-input .btn{flex:0 0 auto}
+  .co-search{position:relative;margin-top:6px}
+  .co-results{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:12px;max-height:260px;overflow-y:auto;box-shadow:0 14px 34px rgba(0,0,0,.55)}
+  .co-results[hidden]{display:none}
+  .co-opt{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--line)}
+  .co-opt:last-child{border-bottom:none}
+  .co-opt:hover{background:var(--surface)}
+  .co-opt .av{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--line-strong);display:grid;place-items:center;font-size:11px;font-weight:700;overflow:hidden;color:var(--text)}
+  .co-opt .av img{width:100%;height:100%;object-fit:cover}
+  .co-opt .nm{font-size:14px;font-weight:600;line-height:1.2}
+  .co-opt .hd{font-size:12px;color:var(--muted)}
+  .co-opt .star{margin-left:auto;flex:0 0 auto;font-size:11px;font-weight:700;color:var(--accent-2)}
   .co-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
   .co-list:empty{margin-top:0}
   .co-chip{display:inline-flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:20px;padding:5px 6px 5px 12px;font-size:13px}
   .co-chip small{color:var(--muted)}
   .co-chip button{width:20px;height:20px;border-radius:50%;border:none;background:var(--line-strong);color:var(--text);cursor:pointer;font-size:12px;line-height:1;display:grid;place-items:center}
   .co-chip button:hover{background:var(--accent);color:#fff}
+  .dash-head{display:flex;align-items:center;gap:14px;margin:18px 0 4px}
+  .dash-head h1{margin:0}
+  .pic{width:60px;height:60px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line-strong);display:grid;place-items:center;overflow:hidden;cursor:pointer;position:relative;flex:0 0 auto;font-weight:700;color:var(--muted);font-size:22px}
+  .pic img{width:100%;height:100%;object-fit:cover}
+  .pic .cam{position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:11px;border:2px solid var(--bg)}
+  .poster-row{display:flex;align-items:center;gap:10px;margin-top:6px}
+  .poster-thumb{width:70px;height:44px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line-strong);overflow:hidden;flex:0 0 auto;display:none}
+  .poster-thumb.has{display:block}
+  .poster-thumb img{width:100%;height:100%;object-fit:cover}
+  .uploading{opacity:.6;pointer-events:none}
 
   .toggle{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
 
@@ -150,6 +168,11 @@
           <input id="pCity" type="text" placeholder="Lisbon" />
           <label for="pBio">Bio</label>
           <textarea id="pBio" placeholder="One line about you and your shows."></textarea>
+          <label>Profile photo (optional)</label>
+          <label class="pic" id="pPic" style="margin-top:4px" title="Choose a photo">
+            <span id="pPicInner">＋</span><span class="cam">✎</span>
+            <input type="file" id="pAvatarFile" accept="image/*" hidden />
+          </label>
           <label>What do you do?</label>
           <div class="checks">
             <label><input type="checkbox" value="standup" checked /> Standup</label>
@@ -166,7 +189,13 @@
 
     <!-- dashboard -->
     <div id="dashboard" class="hidden">
-      <h1 id="dashName">&nbsp;</h1>
+      <div class="dash-head">
+        <label class="pic" id="dashPic" title="Change photo">
+          <span id="dashPicInner"></span><span class="cam">✎</span>
+          <input type="file" id="dashAvatarFile" accept="image/*" hidden />
+        </label>
+        <h1 id="dashName">&nbsp;</h1>
+      </div>
       <div class="sharebox">
         <div class="share-label">Your public link — share it anywhere</div>
         <div class="share-row">
@@ -221,10 +250,18 @@
       </div>
       <label for="fUrl">Ticket link</label>
       <input id="fUrl" type="url" placeholder="https://…" />
+      <label for="fBooking">…or a booking note <span style="color:var(--muted-2);font-weight:400">— if there's no ticket link</span></label>
+      <input id="fBooking" type="text" placeholder="e.g. Book with me · At the door" />
+      <label>Poster / image (optional)</label>
+      <div class="poster-row">
+        <span class="poster-thumb" id="evPosterThumb"><img id="evPosterImg" alt="" /></span>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">Choose image<input type="file" id="fPosterFile" accept="image/*" hidden /></label>
+        <button type="button" class="btn btn-ghost btn-sm" id="evPosterClear" hidden>Remove</button>
+      </div>
       <label for="fCoHandle">Co-artists <span style="color:var(--muted-2);font-weight:400">— the show appears on their page too</span></label>
-      <div class="co-input">
-        <input id="fCoHandle" type="text" placeholder="their handle, e.g. ritasalgado" autocapitalize="off" autocorrect="off" spellcheck="false" />
-        <button class="btn btn-ghost btn-sm" type="button" id="fCoAdd">Add</button>
+      <div class="co-search">
+        <input id="fCoHandle" type="text" placeholder="search by name or handle" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <div id="coResults" class="co-results" hidden></div>
       </div>
       <div id="coList" class="co-list"></div>
       <div style="height:16px"></div>
@@ -254,6 +291,37 @@
   function show(el){ el.classList.remove("hidden"); }
   function hide(el){ el.classList.add("hidden"); }
   function msg(el,text,kind){ el.textContent=text; el.className="msg "+(kind||"err"); if(!text) el.className="msg"; }
+
+  // ---------- images: downscale in-browser, then upload (keeps storage tiny) ----------
+  function resizeImage(file, maxDim, quality){
+    return new Promise(function(resolve, reject){
+      if(!/^image\//.test(file.type)){ reject(new Error("Please choose an image file.")); return; }
+      if(file.size > 10*1024*1024){ reject(new Error("That image is too big (max 10MB).")); return; }
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function(){
+        URL.revokeObjectURL(url);
+        var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        var cw = Math.round(img.width*scale), ch = Math.round(img.height*scale);
+        var c = document.createElement("canvas"); c.width=cw; c.height=ch;
+        c.getContext("2d").drawImage(img, 0, 0, cw, ch);
+        c.toBlob(function(b){ b ? resolve(b) : reject(new Error("Could not process image.")); }, "image/jpeg", quality||0.85);
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("Could not read that image.")); };
+      img.src = url;
+    });
+  }
+  function uploadImage(bucket, file){
+    var maxDim = bucket==="avatars" ? 512 : 1280;
+    return resizeImage(file, maxDim, 0.85).then(function(blob){
+      var name = bucket==="avatars" ? "avatar.jpg" : ("poster-"+Date.now()+".jpg");
+      var path = STATE.user.id + "/" + name;
+      return sb.storage.from(bucket).upload(path, blob, {upsert:true, contentType:"image/jpeg"}).then(function(up){
+        if(up.error) throw up.error;
+        return sb.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+      });
+    });
+  }
 
   var STATE = { user:null, artist:null, editing:null };
 
@@ -307,11 +375,39 @@
       var pubUrl = new URL(encodeURIComponent(res.data.handle), location.href).href;
       $("publicLink").href = pubUrl;
       $("publicUrl").value = pubUrl;
+      renderDashAvatar();
       loadEvents();
+      loadCollaborators();
     });
   }
+  function renderDashAvatar(){
+    var el=$("dashPicInner"); if(!el) return;
+    if(STATE.artist && STATE.artist.avatar_url){ el.innerHTML='<img src="'+esc(STATE.artist.avatar_url)+'" alt="">'; }
+    else { el.textContent = (STATE.artist && coInitials(STATE.artist.name)) || "?"; }
+  }
+  $("dashAvatarFile").addEventListener("change", function(){
+    var f=this.files[0]; if(!f) return;
+    var pic=$("dashPic"); pic.classList.add("uploading");
+    var newUrl;
+    uploadImage("avatars", f).then(function(url){
+      newUrl = url;
+      return sb.from("artists").update({avatar_url:url}).eq("id", STATE.artist.id);
+    }).then(function(r){
+      if(r && r.error) throw r.error;
+      STATE.artist.avatar_url = newUrl; renderDashAvatar(); toast("Photo updated ✓");
+    }).catch(function(err){ toast((err&&err.message)||"Upload failed"); }).then(function(){ pic.classList.remove("uploading"); });
+  });
 
   // ---------- profile create ----------
+  var pAvatarUrl = null;
+  $("pAvatarFile").addEventListener("change", function(){
+    var f=this.files[0]; if(!f) return;
+    var pic=$("pPic"); pic.classList.add("uploading"); msg($("profileMsg"),"");
+    uploadImage("avatars", f).then(function(url){
+      pAvatarUrl=url; $("pPicInner").innerHTML='<img src="'+esc(url)+'" alt="">';
+    }).catch(function(err){ msg($("profileMsg"), (err&&err.message)||"Upload failed","err"); })
+      .then(function(){ pic.classList.remove("uploading"); });
+  });
   $("profileForm").addEventListener("submit", function(e){
     e.preventDefault();
     var facets = Array.prototype.slice.call(document.querySelectorAll("#profileForm .checks input:checked")).map(function(c){return c.value;});
@@ -321,6 +417,7 @@
       handle: $("pHandle").value.trim().toLowerCase(),
       city: $("pCity").value.trim() || null,
       bio: $("pBio").value.trim() || null,
+      avatar_url: pAvatarUrl || null,
       facets: facets
     };
     sb.from("artists").insert(row).select().single().then(function(res){
@@ -384,6 +481,23 @@
     var d=new Date(iso); var pad=function(n){return String(n).padStart(2,"0");};
     return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());
   }
+  // ---- event poster ----
+  var evPosterUrl = null;
+  function setPosterThumb(url){
+    evPosterUrl = url || null;
+    var th=$("evPosterThumb"), img=$("evPosterImg"), clr=$("evPosterClear");
+    if(url){ img.src=url; th.classList.add("has"); clr.hidden=false; }
+    else { img.removeAttribute("src"); th.classList.remove("has"); clr.hidden=true; }
+  }
+  $("fPosterFile").addEventListener("change", function(){
+    var f=this.files[0]; if(!f) return;
+    var self=this; self.disabled=true; msg($("evMsg"),"");
+    uploadImage("posters", f).then(function(url){ setPosterThumb(url); })
+      .catch(function(err){ msg($("evMsg"), (err&&err.message)||"Upload failed","err"); })
+      .then(function(){ self.disabled=false; });
+  });
+  $("evPosterClear").addEventListener("click", function(){ setPosterThumb(null); $("fPosterFile").value=""; });
+
   // ---- co-artists draft ----
   var coDraft = [];
   function renderCo(){
@@ -396,20 +510,72 @@
       b.onclick=function(){ coDraft.splice(parseInt(b.getAttribute("data-rm"),10),1); renderCo(); };
     });
   }
-  function addCo(){
-    var h = $("fCoHandle").value.trim().toLowerCase().replace(/^@/,"");
-    if(!h) return;
-    if(STATE.artist && h===STATE.artist.handle){ msg($("evMsg"),"That's you — you're already on the show.","err"); return; }
-    if(coDraft.some(function(a){return a.handle===h;})){ $("fCoHandle").value=""; return; }
-    sb.from("artists").select("id,handle,name").eq("handle",h).maybeSingle().then(function(res){
-      if(res.error){ msg($("evMsg"),res.error.message,"err"); return; }
-      if(!res.data){ msg($("evMsg"),'No artist with handle "'+h+'". They need a Gigszio page first.',"err"); return; }
-      coDraft.push({artist_id:res.data.id, handle:res.data.handle, name:res.data.name});
-      $("fCoHandle").value=""; msg($("evMsg"),""); renderCo();
+  var COLLAB = {};   // artist_id -> #shared events with me (ranking)
+  function loadCollaborators(){
+    COLLAB = {};
+    if(!STATE.artist) return;
+    sb.from("event_artists").select("event_id").eq("artist_id", STATE.artist.id).then(function(r1){
+      var ids = (r1.data||[]).map(function(x){ return x.event_id; });
+      if(!ids.length) return;
+      sb.from("event_artists").select("artist_id").in("event_id", ids).then(function(r2){
+        (r2.data||[]).forEach(function(r){ if(r.artist_id!==STATE.artist.id) COLLAB[r.artist_id]=(COLLAB[r.artist_id]||0)+1; });
+      });
     });
   }
-  $("fCoAdd").addEventListener("click", addCo);
-  $("fCoHandle").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); addCo(); } });
+  function coInitials(name){
+    var p=String(name||"").trim().split(/\s+/);
+    return (((p[0]||"")[0]||"")+((p[1]||"")[0]||"")).toUpperCase();
+  }
+  function hideCoResults(){ var el=$("coResults"); el.hidden=true; el.innerHTML=""; }
+  function renderCoResults(list){
+    list = (list||[]).filter(function(a){ return a.id!==STATE.artist.id && !coDraft.some(function(d){return d.artist_id===a.id;}); });
+    list.sort(function(a,b){ return (COLLAB[b.id]||0)-(COLLAB[a.id]||0) || String(a.name).localeCompare(b.name); });
+    var el=$("coResults");
+    if(!list.length){ el.innerHTML='<div class="co-opt" style="cursor:default;color:var(--muted-2)">No matches</div>'; el.hidden=false; return; }
+    el.innerHTML = list.slice(0,8).map(function(a){
+      var av = a.avatar_url ? '<span class="av"><img src="'+esc(a.avatar_url)+'" alt=""></span>' : '<span class="av">'+esc(coInitials(a.name))+'</span>';
+      var star = COLLAB[a.id] ? '<span class="star">★ worked together</span>' : '';
+      return '<div class="co-opt" data-id="'+esc(a.id)+'" data-h="'+esc(a.handle)+'" data-n="'+esc(a.name)+'">'+av+
+             '<span><span class="nm">'+esc(a.name)+'</span><br><span class="hd">@'+esc(a.handle)+'</span></span>'+star+'</div>';
+    }).join("");
+    Array.prototype.forEach.call(el.querySelectorAll("[data-id]"), function(o){
+      o.onclick=function(){
+        coDraft.push({artist_id:o.getAttribute("data-id"), handle:o.getAttribute("data-h"), name:o.getAttribute("data-n")});
+        $("fCoHandle").value=""; hideCoResults(); renderCo();
+      };
+    });
+    el.hidden=false;
+  }
+  function runCoSearch(q){
+    q = q.replace(/[,()*%]/g,"");
+    if(!q){ showCollabSuggestions(); return; }
+    sb.from("artists").select("id,handle,name,avatar_url").or("handle.ilike.%"+q+"%,name.ilike.%"+q+"%").limit(12).then(function(res){
+      if(!res.error) renderCoResults(res.data);
+    });
+  }
+  function showCollabSuggestions(){
+    var ids=Object.keys(COLLAB);
+    if(!ids.length){ hideCoResults(); return; }
+    sb.from("artists").select("id,handle,name,avatar_url").in("id", ids).then(function(res){
+      if(!res.error) renderCoResults(res.data);
+    });
+  }
+  var coSearchTimer;
+  $("fCoHandle").addEventListener("input", function(){
+    clearTimeout(coSearchTimer);
+    var q=this.value.trim();
+    if(!q){ showCollabSuggestions(); return; }
+    coSearchTimer=setTimeout(function(){ runCoSearch(q); }, 200);
+  });
+  $("fCoHandle").addEventListener("focus", function(){
+    var q=this.value.trim();
+    if(q) runCoSearch(q); else showCollabSuggestions();
+  });
+  $("fCoHandle").addEventListener("keydown", function(e){
+    if(e.key==="Enter"){ e.preventDefault(); var first=$("coResults").querySelector("[data-id]"); if(first) first.click(); }
+    else if(e.key==="Escape"){ hideCoResults(); }
+  });
+  document.addEventListener("click", function(e){ if(!e.target.closest(".co-search")) hideCoResults(); });
 
   function openEditor(ev){
     STATE.editing = ev || null;
@@ -422,6 +588,9 @@
     $("fDate").value = ev ? toLocalInput(ev.starts_at) : "";
     $("fPrice").value = ev && ev.price_cents!=null ? (ev.price_cents/100) : "";
     $("fUrl").value = ev ? (ev.ticket_url||"") : "";
+    $("fBooking").value = ev ? (ev.booking_note||"") : "";
+    setPosterThumb(ev ? ev.image_url : null);
+    $("fPosterFile").value = "";
     $("fCoHandle").value = "";
     coDraft = []; renderCo();
     msg($("evMsg"),"");
@@ -456,6 +625,8 @@
       city: $("fCity").value.trim() || null,
       starts_at: new Date($("fDate").value).toISOString(),
       ticket_url: $("fUrl").value.trim() || null,
+      booking_note: $("fBooking").value.trim() || null,
+      image_url: evPosterUrl || null,
       price_cents: priceVal==="" ? null : Math.round(parseFloat(priceVal)*100)
     };
     var btn=$("evSave"); btn.disabled=true;

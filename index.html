@@ -81,8 +81,9 @@
     width:104px;height:104px;border-radius:50%;margin:0 auto 14px;
     background:linear-gradient(150deg,#3a2b4d,#5a2f2a);
     display:grid;place-items:center;font-size:40px;font-weight:700;
-    border:2px solid rgba(255,255,255,.16);box-shadow:0 12px 34px rgba(0,0,0,.5);position:relative;
+    border:2px solid rgba(255,255,255,.16);box-shadow:0 12px 34px rgba(0,0,0,.5);position:relative;overflow:hidden;
   }
+  .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
   .status{
     display:inline-flex;align-items:center;gap:7px;margin-top:10px;
     background:var(--accent-soft);border:1px solid rgba(255,86,56,.3);
@@ -148,10 +149,12 @@
   .sec-label::after{content:"";flex:1;height:1px;background:var(--line)}
 
   .event{
-    display:flex;gap:14px;background:var(--surface);border:1px solid var(--line);
+    display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);
     border-radius:var(--radius);padding:14px;margin-bottom:12px;position:relative;
     transition:border-color .15s, transform .12s;
   }
+  .event-main{display:flex;gap:14px}
+  .ev-poster{width:100%;max-height:190px;object-fit:cover;border-radius:12px;margin-bottom:12px;display:block}
   .event:hover{border-color:var(--line-strong)}
   .event.collab{border-color:rgba(255,194,75,.28);background:linear-gradient(180deg,rgba(255,194,75,.06),var(--surface))}
   .datebox{
@@ -191,6 +194,7 @@
   .ticket:hover{background:rgba(255,86,56,.22)}
   .ticket svg{width:14px;height:14px}
   .ticket.sold{background:var(--surface-2);color:var(--muted-2);border-color:var(--line);pointer-events:none}
+  .ticket.booking{background:var(--surface-2);color:var(--text);border-color:var(--line-strong);pointer-events:none;font-weight:600}
   .bell{
     flex:0 0 auto;width:40px;height:38px;border-radius:10px;cursor:pointer;
     background:var(--surface-2);border:1px solid var(--line-strong);color:var(--muted);
@@ -417,6 +421,9 @@
       title: ev.title,
       venue: [ev.venue, ev.city].filter(Boolean).join(" · "),
       ticket: ev.ticket_status,
+      ticketUrl: ev.ticket_url || null,
+      booking: ev.booking_note || null,
+      image: ev.image_url || null,
       price: priceStr(ev),
       starts_at: ev.starts_at,
       collab: collab, collabNote: collabNote
@@ -424,32 +431,38 @@
   }
 
   // ---------- rendering ----------
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
   function collabHTML(ev){
     if(!ev.collab) return "";
-    var s = ev.collab.map(function(a){ return '<div class="a" style="background:'+a.c+'">'+a.i+'</div>'; }).join("");
-    return '<div class="collab-row"><div class="stack">'+s+'</div><span class="collab-note">'+ev.collabNote+'</span></div>';
+    var s = ev.collab.map(function(a){ return '<div class="a" style="background:'+esc(a.c)+'">'+esc(a.i)+'</div>'; }).join("");
+    return '<div class="collab-row"><div class="stack">'+s+'</div><span class="collab-note">'+esc(ev.collabNote)+'</span></div>';
   }
   function ticketHTML(ev){
-    if(ev.ticket==="soon") return '<span class="ticket sold">Tickets soon</span>';
     if(ev.ticket==="sold") return '<span class="ticket sold">Sold out</span>';
-    if(ev.ticket==="free") return '<a class="ticket" href="#" data-noop="1">'+icons.ticket+' Free entry</a>';
-    return '<a class="ticket" href="#" data-noop="1">'+icons.ticket+' Tickets'+(ev.price?' · '+ev.price:'')+'</a>';
+    if(ev.ticket==="soon") return '<span class="ticket sold">Tickets soon</span>';
+    if(ev.ticketUrl) return '<a class="ticket" href="'+esc(ev.ticketUrl)+'" target="_blank" rel="noopener">'+icons.ticket+' Tickets'+(ev.price?' · '+esc(ev.price):'')+'</a>';
+    if(ev.booking) return '<span class="ticket booking">'+esc(ev.booking)+'</span>';
+    if(ev.ticket==="free") return '<span class="ticket booking">Free entry</span>';
+    return '<span class="ticket sold">Details soon</span>';
   }
   function eventHTML(ev, isPast){
     var reminders = LS.get("reminders", {});
     var on = reminders[ev.id] ? " on" : "";
     var kindClass = ev.kind==="improv" ? "improv" : (ev.kind==="theatre" ? "teatro" : "");
     return ''+
-    '<article class="event '+(ev.collab?'collab':'')+'" data-kind="'+ev.kind+'">'+
-      '<div class="datebox"><div class="d">'+ev.day+'</div><div class="m">'+ev.month+'</div><div class="wd">'+ev.wd+'</div></div>'+
-      '<div class="ev-body">'+
-        '<div class="ev-kind '+kindClass+'">'+ev.kindLabel+'</div>'+
-        '<div class="ev-title">'+ev.title+'</div>'+
-        '<div class="ev-venue">'+icons.pin+ev.venue+'</div>'+
-        collabHTML(ev)+
-        (isPast ? '' :
-          '<div class="ev-actions">'+ticketHTML(ev)+
-          '<button class="bell'+on+'" data-bell="'+ev.id+'" aria-label="Notify me">'+icons.bell+'</button></div>')+
+    '<article class="event '+(ev.collab?'collab':'')+'" data-kind="'+esc(ev.kind)+'">'+
+      (ev.image ? '<img class="ev-poster" src="'+esc(ev.image)+'" alt="" loading="lazy" />' : '')+
+      '<div class="event-main">'+
+        '<div class="datebox"><div class="d">'+esc(ev.day)+'</div><div class="m">'+esc(ev.month)+'</div><div class="wd">'+esc(ev.wd)+'</div></div>'+
+        '<div class="ev-body">'+
+          '<div class="ev-kind '+kindClass+'">'+esc(ev.kindLabel)+'</div>'+
+          '<div class="ev-title">'+esc(ev.title)+'</div>'+
+          '<div class="ev-venue">'+icons.pin+esc(ev.venue)+'</div>'+
+          collabHTML(ev)+
+          (isPast ? '' :
+            '<div class="ev-actions">'+ticketHTML(ev)+
+            '<button class="bell'+on+'" data-bell="'+esc(ev.id)+'" aria-label="Notify me">'+icons.bell+'</button></div>')+
+        '</div>'+
       '</div>'+
     '</article>';
   }
@@ -603,14 +616,16 @@
         if(res.error || !res.data) throw (res.error || new Error("artist not found"));
         var artist = res.data;
         ARTIST = artist;
-        document.querySelector(".avatar").textContent = initials(artist.name) || "★";
+        var av = document.querySelector(".avatar");
+        if(artist.avatar_url){ av.innerHTML = '<img src="'+esc(artist.avatar_url)+'" alt="" />'; }
+        else { av.textContent = initials(artist.name) || "★"; }
         document.querySelector("h1").textContent = artist.name;
         document.querySelector(".handle").textContent = "gigszio.com/" + artist.handle;
         if(artist.bio) document.querySelector(".bio").textContent = artist.bio;
         document.title = "Gigszio · " + artist.name;
 
         var evP = sb.from("event_artists")
-          .select("event:events(id,title,kind,venue,city,starts_at,ticket_url,ticket_status,price_cents,currency,lineup:event_artists(role,artist:artists(name,handle)))")
+          .select("event:events(id,title,kind,venue,city,starts_at,ticket_url,ticket_status,price_cents,currency,booking_note,image_url,lineup:event_artists(role,artist:artists(name,handle)))")
           .eq("artist_id", artist.id);
         var cntP = sb.from("artist_stats").select("followers").eq("artist_id", artist.id).maybeSingle();
         return Promise.all([evP, cntP]);
