@@ -3,26 +3,26 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Gigszio · Miguel Tavares</title>
+<title>Livez · Miguel Tavares</title>
 <meta name="description" content="Miguel Tavares' next shows — standup, improv and theatre. Follow and get pinged about upcoming dates." />
 <link rel="icon" type="image/png" href="favicon.png" />
 <link rel="apple-touch-icon" href="favicon.png" />
 
 <!-- Open Graph -->
 <meta property="og:type" content="website" />
-<meta property="og:site_name" content="Gigszio" />
-<meta property="og:title" content="Miguel Tavares · Gigszio" />
+<meta property="og:site_name" content="Livez" />
+<meta property="og:title" content="Miguel Tavares · Livez" />
 <meta property="og:description" content="Standup, improv & theatre — every date in one place. Follow to never miss a show." />
-<meta property="og:url" content="https://ruicarest.github.io/cartaz/" />
-<meta property="og:image" content="https://ruicarest.github.io/cartaz/og.png" />
+<meta property="og:url" content="https://livez.art/" />
+<meta property="og:image" content="https://livez.art/og.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="Miguel Tavares on Gigszio — standup, improv and theatre." />
+<meta property="og:image:alt" content="Miguel Tavares on Livez — standup, improv and theatre." />
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Miguel Tavares · Gigszio" />
+<meta name="twitter:title" content="Miguel Tavares · Livez" />
 <meta name="twitter:description" content="Standup, improv & theatre — every date in one place. Follow to never miss a show." />
-<meta name="twitter:image" content="https://ruicarest.github.io/cartaz/og.png" />
+<meta name="twitter:image" content="https://livez.art/og.png" />
 <meta name="theme-color" content="#0e0e12" />
 <style>
   :root{
@@ -279,7 +279,7 @@
 <div class="app">
 
   <div class="brandbar">
-    <div class="brand"><span class="dot"><img src="logo-dark.png" alt="" /></span> Gigszio <small>&nbsp;· beta</small></div>
+    <div class="brand"><span class="dot"><img src="logo-dark.png" alt="" /></span> Livez <small>&nbsp;· beta</small></div>
     <div style="display:flex;gap:8px">
       <a class="share" id="ownerEdit" href="studio.html" title="Edit your page" hidden aria-label="Edit your page">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -336,9 +336,9 @@
   <div class="past" id="pastList"></div>
 
   <footer>
-    <div class="mk">🎭 Made with Gigszio</div>
+    <div class="mk">🎭 Made with Livez</div>
     Your next show, always up to date.<br/>
-    <a href="studio.html" id="claimLink">Create my Gigszio →</a>
+    <a href="studio.html" id="claimLink">Create my Livez →</a>
     <div style="margin-top:10px"><a href="#" id="suggestLink">💡 Suggest a feature</a></div>
   </footer>
 
@@ -360,7 +360,7 @@
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="suggestTitle">
     <button class="sheet-close" id="suggestClose" aria-label="Close">✕</button>
     <div class="sheet-title" id="suggestTitle">Suggest a feature</div>
-    <p class="sheet-sub">What would make Gigszio better? We read everything.</p>
+    <p class="sheet-sub">What would make Livez better? We read everything.</p>
     <form id="suggestForm">
       <textarea id="suggestText" rows="3" required placeholder="Your idea…"></textarea>
       <input id="suggestEmail" type="email" placeholder="email (optional, for a reply)" />
@@ -670,11 +670,11 @@
 
   document.getElementById("shareBtn").addEventListener("click", function(){
     var url = location.href;
-    if(navigator.share){ navigator.share({title:"Miguel Tavares on Gigszio", url:url}).catch(function(){}); }
+    if(navigator.share){ navigator.share({title:"Miguel Tavares on Livez", url:url}).catch(function(){}); }
     else if(navigator.clipboard){ navigator.clipboard.writeText(url); toast("Link copied ✓"); }
     else { toast(url); }
   });
-  // "Create my Gigszio" navigates to the Studio (href="studio.html").
+  // "Create my Livez" navigates to the Studio (href="studio.html").
 
   // ---------- feature suggestions ----------
   var suggestModal=document.getElementById("suggestModal");
@@ -707,10 +707,10 @@
     var rg=g.createRadialGradient(W/2,-150,60,W/2,-150,1400); rg.addColorStop(0,"rgba(255,86,56,.30)"); rg.addColorStop(1,"rgba(255,86,56,0)");
     g.fillStyle=rg; g.fillRect(0,0,W,H);
     return loadImg("logo-dark.png").then(function(logo){
-      // Gigszio brand, centered at top (coral chip + wordmark)
+      // Livez brand, centered at top (coral chip + wordmark)
       var chip=104, chipY=150;
       g.font="800 76px "+SANS;
-      var word="Gigszio", ww=g.measureText(word).width, gap=24, groupW=chip+gap+ww, startX=(W-groupW)/2;
+      var word="Livez", ww=g.measureText(word).width, gap=24, groupW=chip+gap+ww, startX=(W-groupW)/2;
       g.fillStyle="#ff5638"; roundRect(g,startX,chipY,chip,chip,28); g.fill();
       var lw=chip*0.6, lh=lw*(logo.height/logo.width); g.drawImage(logo, startX+(chip-lw)/2, chipY+(chip-lh)/2, lw, lh);
       g.textAlign="left"; g.textBaseline="middle"; g.fillStyle="#f5f3ef"; g.fillText(word, startX+chip+gap, chipY+chip/2); g.textBaseline="alphabetic";
@@ -729,7 +729,7 @@
       });
       if(!UPCOMING.length){ g.textAlign="center"; g.fillStyle="#9c99a6"; g.font="400 44px "+SANS; g.fillText("New dates coming soon.", W/2, y+40); }
       // footer: just the link
-      g.textAlign="center"; g.fillStyle="#9c99a6"; g.font="600 40px "+SANS; g.fillText("gigszio.com/"+ARTIST.handle, W/2, H-100);
+      g.textAlign="center"; g.fillStyle="#9c99a6"; g.font="600 40px "+SANS; g.fillText("livez.art/"+ARTIST.handle, W/2, H-100);
       return new Promise(function(res){ c.toBlob(function(b){ res(b); }, "image/png"); });
     });
   }
@@ -737,9 +737,9 @@
     if(!ARTIST){ toast("Still loading…"); return; }
     toast("Building your story…");
     genStory().then(function(blob){
-      var file=new File([blob], "gigszio-"+ARTIST.handle+".png", {type:"image/png"});
+      var file=new File([blob], "livez-"+ARTIST.handle+".png", {type:"image/png"});
       if(navigator.canShare && navigator.canShare({files:[file]})){
-        navigator.share({files:[file], title:ARTIST.name+" · Gigszio", text:"Upcoming shows"}).catch(function(){});
+        navigator.share({files:[file], title:ARTIST.name+" · Livez", text:"Upcoming shows"}).catch(function(){});
       } else {
         var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=file.name; a.click();
         setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
@@ -783,11 +783,11 @@
         if(artist.avatar_url){ av.innerHTML = '<img src="'+esc(artist.avatar_url)+'" alt="" />'; }
         else { av.textContent = initials(artist.name) || "★"; }
         document.querySelector("h1").textContent = artist.name;
-        document.querySelector(".handle").textContent = "gigszio.com/" + artist.handle;
+        document.querySelector(".handle").textContent = "livez.art/" + artist.handle;
         if(artist.bio) document.querySelector(".bio").textContent = artist.bio;
         renderFacets(artist);
         renderSocials(artist);
-        document.title = "Gigszio · " + artist.name;
+        document.title = "Livez · " + artist.name;
 
         var evP = sb.from("event_artists")
           .select("event:events(id,title,kind,venue,city,starts_at,ticket_url,ticket_status,price_cents,currency,booking_note,image_url,lineup:event_artists(role,status,artist:artists(name,handle)))")
@@ -813,7 +813,7 @@
         renderPast();
       })
       .catch(function(err){
-        console.error("Gigszio load error:", err);
+        console.error("Livez load error:", err);
         list.innerHTML = '<div class="empty">Couldn’t load shows right now. Please refresh.</div>';
       });
   }

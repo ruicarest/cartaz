@@ -1,8 +1,8 @@
-# Gigszio
+# Livez
 
 A link-in-bio for live comedy & theatre artists — every date and ticket link in one place.
 
-**Live demo:** https://ruicarest.github.io/cartaz/
+**Live demo:** https://livez.art/
 
 This is a static, dependency-free prototype (single `index.html`) demonstrating the core idea:
 
