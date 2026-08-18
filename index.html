@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Livez · Miguel Tavares</title>
-<meta name="description" content="Miguel Tavares' next shows — standup, improv and theatre. Follow and get pinged about upcoming dates." />
+<title>Livez — live shows, one link</title>
+<meta name="description" content="Livez — one link for every live show. Standup, improv & theatre dates and tickets in one place; fans follow and get notified." />
 <link rel="icon" type="image/png" href="favicon.png" />
 <link rel="apple-touch-icon" href="favicon.png" />
 
 <!-- Open Graph -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Livez" />
-<meta property="og:title" content="Miguel Tavares · Livez" />
+<meta property="og:title" content="Livez — live shows, one link" />
 <meta property="og:description" content="Standup, improv & theatre — every date in one place. Follow to never miss a show." />
 <meta property="og:url" content="https://livez.art/" />
 <meta property="og:image" content="https://livez.art/og.png" />
@@ -20,7 +20,7 @@
 <meta property="og:image:alt" content="Miguel Tavares on Livez — standup, improv and theatre." />
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Miguel Tavares · Livez" />
+<meta name="twitter:title" content="Livez — live shows, one link" />
 <meta name="twitter:description" content="Standup, improv & theatre — every date in one place. Follow to never miss a show." />
 <meta name="twitter:image" content="https://livez.art/og.png" />
 <meta name="theme-color" content="#0e0e12" />
@@ -58,6 +58,24 @@
     background-attachment:fixed;
   }
   .app{max-width:var(--maxw);margin:0 auto;padding:0 16px 96px;position:relative}
+
+  /* ---------- landing ---------- */
+  .landing{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+  .lwrap{max-width:600px;width:100%;text-align:center}
+  .l-brand{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:20px;letter-spacing:-.02em;margin-bottom:38px}
+  .l-brand .dot{width:30px;height:30px;border-radius:9px;background:linear-gradient(140deg,var(--accent),#ff8a5c);display:grid;place-items:center;box-shadow:0 3px 10px rgba(255,86,56,.4)}
+  .l-brand .dot img{width:74%;height:74%;object-fit:contain;display:block}
+  .l-hero{font-size:40px;line-height:1.08;letter-spacing:-.03em;font-weight:800;margin:0 0 16px}
+  .l-sub{color:var(--muted);font-size:16px;line-height:1.5;max-width:460px;margin:0 auto 28px}
+  .l-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:48px}
+  .l-cta .btn{flex:0 0 auto;min-width:170px;text-decoration:none}
+  .l-example{background:var(--surface);border:1px solid var(--line-strong);color:var(--text)}
+  .l-features{display:grid;gap:14px;text-align:left;max-width:460px;margin:0 auto}
+  .l-feat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .l-feat b{display:block;font-size:15px;font-weight:700;margin-bottom:5px}
+  .l-feat span{color:var(--muted);font-size:14px;line-height:1.5}
+  .l-foot{color:var(--muted-2);font-size:12px;margin-top:40px}
+  @media (max-width:420px){ .l-hero{font-size:32px} .l-cta .btn{width:100%} }
 
   .brandbar{display:flex;align-items:center;justify-content:space-between;padding:14px 2px 10px}
   .brand{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:-.02em;font-size:15px}
@@ -276,6 +294,23 @@
 </style>
 </head>
 <body>
+<div class="landing" id="landing" hidden>
+  <div class="lwrap">
+    <div class="l-brand"><span class="dot"><img src="logo-dark.png" alt="" /></span> Livez</div>
+    <h1 class="l-hero">One link for every show you do.</h1>
+    <p class="l-sub">Standup, improv, theatre — all your upcoming dates and ticket links in one place. Fans follow and get pinged about the next one.</p>
+    <div class="l-cta">
+      <a class="btn btn-primary" href="studio.html">Create your page</a>
+      <a class="btn btn-ghost l-example" href="?u=migueltavares">See an example →</a>
+    </div>
+    <div class="l-features">
+      <div class="l-feat"><b>🎭 One artist, many stages</b><span>Solo standup, your improv troupe and theatre — together under one link.</span></div>
+      <div class="l-feat"><b>🤝 Shared shows</b><span>Co-bill with other artists — update once and it shows on everyone's page.</span></div>
+      <div class="l-feat"><b>🔔 Never miss a date</b><span>Fans follow you and get an email when there's a new show.</span></div>
+    </div>
+    <div class="l-foot">🎭 Livez · live shows, one link</div>
+  </div>
+</div>
 <div class="app">
 
   <div class="brandbar">
@@ -387,7 +422,7 @@
     if(q) return q.toLowerCase();
     var seg = location.pathname.split("/").filter(Boolean).pop() || "";
     if(seg && seg.indexOf(".") === -1 && seg !== "cartaz") return decodeURIComponent(seg).toLowerCase();
-    return "migueltavares";
+    return null;   // root → landing page
   }
   var HANDLE = getHandle();
   // If we arrived via ?u=handle (e.g. from the 404 fallback), show the clean /base/handle URL.
@@ -818,7 +853,11 @@
       });
   }
 
-  load();
+  function showLanding(){
+    var app=document.querySelector(".app"); if(app) app.style.display="none";
+    var l=document.getElementById("landing"); if(l) l.hidden=false;
+  }
+  if(HANDLE){ load(); } else { showLanding(); }
 })();
 </script>
 </body>
