@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" type="image/png" href="favicon.png" />
 <link rel="apple-touch-icon" href="favicon.png" />
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <style>
   :root{
     --bg:#0e0e12;--surface:#16161d;--surface-2:#1e1e27;--line:rgba(255,255,255,.08);
@@ -159,12 +160,14 @@
         <div style="height:14px"></div>
         <button class="btn btn-primary" type="submit" id="authBtn"><span>Sign in</span></button>
         <div class="msg" id="authMsg"></div>
+        <div id="cf-turnstile"></div>
       </form>
       <div class="toggle">
         <span id="toggleTxt">New here?</span>
         <button class="link" id="toggleBtn" type="button">Create an account</button>
       </div>
     </div>
+    <p style="text-align:center;color:var(--muted-2);font-size:12px;margin-top:14px">Protected by Cloudflare Turnstile. By continuing you agree to our <a href="privacy.html" style="color:var(--muted)">Privacy Policy</a>.</p>
   </section>
 
   <!-- APP -->
@@ -463,18 +466,43 @@
   }
   $("toggleBtn").addEventListener("click", function(){ mode = mode==="signin"?"signup":"signin"; paintAuthMode(); });
 
+  // ---- Turnstile (invisible CAPTCHA on email auth) ----
+  var TS_SITEKEY = "0x4AAAAAAET5lT_TjGOdeYjA";
+  var tsWidgetId = null, tsResolve = null;
+  function renderTurnstileOnce(){
+    if(tsWidgetId!==null || !window.turnstile) return;
+    tsWidgetId = window.turnstile.render("#cf-turnstile", {
+      sitekey: TS_SITEKEY, size:"invisible",
+      callback:function(tok){ var r=tsResolve; tsResolve=null; if(r) r(tok); },
+      "error-callback":function(){ var r=tsResolve; tsResolve=null; if(r) r(null); }
+    });
+  }
+  function getCaptchaToken(){
+    return new Promise(function(resolve){
+      if(!window.turnstile){ resolve(null); return; }
+      renderTurnstileOnce();
+      if(tsWidgetId===null){ resolve(null); return; }
+      tsResolve = resolve;
+      try{ window.turnstile.reset(tsWidgetId); window.turnstile.execute(tsWidgetId); }
+      catch(e){ tsResolve=null; resolve(null); }
+    });
+  }
+
   $("authForm").addEventListener("submit", function(e){
     e.preventDefault();
     var email=$("authEmail").value.trim(), pass=$("authPass").value;
     var btn=$("authBtn"); btn.disabled=true;
-    var op = mode==="signin"
-      ? sb.auth.signInWithPassword({email:email,password:pass})
-      : sb.auth.signUp({email:email,password:pass,options:{emailRedirectTo:location.origin+"/studio.html"}});
-    op.then(function(res){
-      btn.disabled=false;
-      if(res.error){ msg($("authMsg"),res.error.message,"err"); return; }
-      if(!res.data.session){ msg($("authMsg"),"Check your email to confirm your account, then sign in.","ok"); mode="signin"; paintAuthMode(); return; }
-      // session present → onAuthStateChange boots us in
+    getCaptchaToken().then(function(token){
+      if(!token){ btn.disabled=false; msg($("authMsg"),"Couldn't verify you're human — please try again.","err"); return; }
+      var op = mode==="signin"
+        ? sb.auth.signInWithPassword({email:email,password:pass,options:{captchaToken:token}})
+        : sb.auth.signUp({email:email,password:pass,options:{captchaToken:token,emailRedirectTo:location.origin+"/studio.html"}});
+      op.then(function(res){
+        btn.disabled=false;
+        if(res.error){ msg($("authMsg"),res.error.message,"err"); return; }
+        if(!res.data.session){ msg($("authMsg"),"Check your email to confirm your account, then sign in.","ok"); mode="signin"; paintAuthMode(); return; }
+        // session present → onAuthStateChange boots us in
+      });
     });
   });
 
