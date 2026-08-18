@@ -61,6 +61,7 @@
 
   /* ---------- landing ---------- */
   .landing{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+  .landing[hidden]{display:none}
   .lwrap{max-width:600px;width:100%;text-align:center}
   .l-brand{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:20px;letter-spacing:-.02em;margin-bottom:38px}
   .l-brand .dot{width:30px;height:30px;border-radius:9px;background:linear-gradient(140deg,var(--accent),#ff8a5c);display:grid;place-items:center;box-shadow:0 3px 10px rgba(255,86,56,.4)}
@@ -817,7 +818,7 @@
         var av = document.querySelector(".avatar");
         if(artist.avatar_url){ av.innerHTML = '<img src="'+esc(artist.avatar_url)+'" alt="" />'; }
         else { av.textContent = initials(artist.name) || "★"; }
-        document.querySelector("h1").textContent = artist.name;
+        document.querySelector(".app h1").textContent = artist.name;
         document.querySelector(".handle").textContent = "livez.art/" + artist.handle;
         if(artist.bio) document.querySelector(".bio").textContent = artist.bio;
         renderFacets(artist);
