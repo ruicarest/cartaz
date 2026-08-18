@@ -469,7 +469,7 @@
     var btn=$("authBtn"); btn.disabled=true;
     var op = mode==="signin"
       ? sb.auth.signInWithPassword({email:email,password:pass})
-      : sb.auth.signUp({email:email,password:pass});
+      : sb.auth.signUp({email:email,password:pass,options:{emailRedirectTo:location.origin+"/studio.html"}});
     op.then(function(res){
       btn.disabled=false;
       if(res.error){ msg($("authMsg"),res.error.message,"err"); return; }
