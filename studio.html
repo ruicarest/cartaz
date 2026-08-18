@@ -472,7 +472,7 @@
   function renderTurnstileOnce(){
     if(tsWidgetId!==null || !window.turnstile) return;
     tsWidgetId = window.turnstile.render("#cf-turnstile", {
-      sitekey: TS_SITEKEY, size:"invisible",
+      sitekey: TS_SITEKEY, size:"invisible", execution:"execute",
       callback:function(tok){ var r=tsResolve; tsResolve=null; if(r) r(tok); },
       "error-callback":function(){ var r=tsResolve; tsResolve=null; if(r) r(null); }
     });
@@ -482,9 +482,11 @@
       if(!window.turnstile){ resolve(null); return; }
       renderTurnstileOnce();
       if(tsWidgetId===null){ resolve(null); return; }
-      tsResolve = resolve;
+      var done=false;
+      tsResolve = function(tok){ if(done) return; done=true; resolve(tok); };
+      setTimeout(function(){ if(!done){ done=true; tsResolve=null; resolve(null); } }, 12000);
       try{ window.turnstile.reset(tsWidgetId); window.turnstile.execute(tsWidgetId); }
-      catch(e){ tsResolve=null; resolve(null); }
+      catch(e){ if(!done){ done=true; tsResolve=null; resolve(null); } }
     });
   }
 
