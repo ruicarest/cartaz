@@ -263,6 +263,7 @@
           Share to Instagram Story
         </button>
       </div>
+      <a id="adminLink" href="admin.html" hidden style="display:inline-block;font-size:12px;color:var(--muted);text-decoration:underline;margin:2px 2px 6px">💡 View feature suggestions</a>
 
       <div id="invitesWrap" hidden>
         <h2>Invitations</h2>
@@ -579,6 +580,7 @@
       $("publicLink").href = pubUrl;
       $("publicUrl").value = pubUrl;
       renderDashAvatar();
+      if(STATE.user && STATE.user.email === "ruicarest@gmail.com"){ var al=$("adminLink"); if(al) al.hidden=false; }
       sb.from("artist_stats").select("followers").eq("artist_id", res.data.id).maybeSingle().then(function(fr){
         var n=(fr.data && fr.data.followers) || 0, el=$("dashFollowers");
         if(el) el.innerHTML = '<b>'+n+'</b> follower'+(n===1?'':'s')+' <span class="lock">· only you can see this</span>';

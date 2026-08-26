@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Livez · Suggestions</title>
+<style>
+  :root{
+    --bg:#0e0e12;--surface:#16161d;--surface-2:#1c1c25;--line:#26262f;--line-strong:#33333f;
+    --text:#f5f3ef;--muted:#9c99a6;--muted-2:#6f6d78;--accent:#ff5638;--accent-soft:rgba(255,86,56,.12);
+    --maxw:640px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  [hidden]{display:none!important}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;padding:22px 16px 60px}
+  .wrap{max-width:var(--maxw);margin:0 auto}
+  .top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800}
+  .brand .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(140deg,var(--accent),#ff8a5c);display:grid;place-items:center;overflow:hidden}
+  .brand .dot img{width:62%;height:62%;object-fit:contain}
+  .muted{color:var(--muted)}
+  h1{font-size:22px;letter-spacing:-.02em;margin:14px 0 2px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin-bottom:10px}
+  .card .head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;color:var(--muted-2);margin-bottom:7px}
+  .card .head a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line-strong)}
+  .pill{background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:2px 9px;color:var(--muted)}
+  .card .body{color:var(--text);font-size:15px;white-space:pre-wrap;word-break:break-word}
+  .state{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 16px;text-align:center;color:var(--muted)}
+  .state a{color:var(--accent);text-decoration:none;font-weight:700}
+  .count{font-size:13px;color:var(--muted);margin-bottom:14px}
+  a.back{color:var(--muted);font-size:13px;text-decoration:none}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <span class="brand"><span class="dot"><img src="logo-dark.png" alt="" /></span> Livez</span>
+      <span class="muted" style="font-size:13px">· admin</span>
+    </div>
+    <h1>Feature suggestions</h1>
+    <div class="sub">Sent from the “Suggest a feature” box across the site. Private — only you can see this.</div>
+
+    <div id="loading" class="state">Loading…</div>
+    <div id="signedout" class="state" hidden>Sign in first in the <a href="studio.html">Studio</a>, then reload this page.</div>
+    <div id="denied" class="state" hidden>This page is only for the Livez admin account.</div>
+    <div id="notready" class="state" hidden>Suggestions reader isn’t enabled yet. Try again shortly.</div>
+    <div id="empty" class="state" hidden>No suggestions yet.</div>
+
+    <div id="count" class="count" hidden></div>
+    <div id="list"></div>
+
+    <p style="margin-top:22px"><a class="back" href="studio.html">← Back to Studio</a></p>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  "use strict";
+  var SUPABASE_URL = "https://lqwxqrntxlzytizjapzh.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxxd3hxcm50eGx6eXRpemphcHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU3Mjg3NDQsImV4cCI6MjEwMTMwNDc0NH0.orqrk_8hksacqzGk5woBmt3C0gDy_Ya6yl-1E6REKtc";
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function show(id){ var e=$(id); if(e) e.hidden=false; }
+  function fmt(iso){
+    try{ return new Date(iso).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
+    catch(e){ return String(iso||"").slice(0,16); }
+  }
+
+  function render(rows){
+    $("loading").hidden = true;
+    if(!rows.length){ show("empty"); return; }
+    $("count").textContent = rows.length + (rows.length===1?" suggestion":" suggestions");
+    $("count").hidden = false;
+    $("list").innerHTML = rows.map(function(r){
+      var who = r.handle ? '<a href="https://livez.art/'+esc(r.handle)+'" target="_blank" rel="noopener">livez.art/'+esc(r.handle)+'</a>' : '<span class="pill">anonymous</span>';
+      var mail = r.email ? '<a href="mailto:'+esc(r.email)+'">'+esc(r.email)+'</a>' : '<span class="pill">no email</span>';
+      return '<div class="card">'+
+        '<div class="head"><span>'+esc(fmt(r.created_at))+'</span><span>·</span>'+who+'<span>·</span>'+mail+'</div>'+
+        '<div class="body">'+esc(r.body)+'</div>'+
+      '</div>';
+    }).join("");
+  }
+
+  sb.auth.getSession().then(function(s){
+    var user = s.data.session && s.data.session.user;
+    if(!user){ $("loading").hidden = true; show("signedout"); return; }
+    sb.rpc("admin_list_suggestions").then(function(res){
+      if(res.error){
+        $("loading").hidden = true;
+        var m = (res.error.message || "").toLowerCase();
+        show(m.indexOf("not authorized") >= 0 ? "denied" : "notready");
+        return;
+      }
+      render(res.data || []);
+    });
+  });
+})();
+</script>
+</body>
+</html>
