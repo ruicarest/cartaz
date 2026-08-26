@@ -359,12 +359,7 @@
     </button>
   </section>
 
-  <div class="filters" id="filters">
-    <button class="chip active" data-f="all">All</button>
-    <button class="chip" data-f="standup">🎤 Standup</button>
-    <button class="chip" data-f="improv">🎭 Improv</button>
-    <button class="chip" data-f="theatre">🎬 Theatre</button>
-  </div>
+  <div class="filters" id="filters" hidden></div>
 
   <div class="sec-label">Upcoming shows</div>
   <div id="eventList"><div class="empty">Loading shows…</div></div>
@@ -462,6 +457,8 @@
   // ---------- data mapping ----------
   var TZ = "Europe/Lisbon";
   var KIND_LABEL = {standup:"Standup", improv:"Improv", theatre:"Theatre", music:"Music", other:"Live"};
+  var KIND_EMOJI = {standup:"🎤", improv:"🎭", theatre:"🎬", music:"🎵", other:"🎫"};
+  var KIND_ORDER = ["standup","improv","theatre","music","other"];
   var AV_COLORS = ["#5a2f2a","#2f4a5a","#4a2f5a","#2f5a3a","#5a4a2f","#3a2f5a"];
   function initials(name){
     var p = String(name||"").trim().split(/\s+/);
@@ -587,6 +584,22 @@
 
   var UPCOMING=[], PAST=[], currentFilter="all", BASE_FOLLOWERS=0, ARTIST=null;
 
+  // Build the category filter chips from the kinds the artist actually has shows
+  // in — never a fixed Standup/Improv/Theatre row that shows categories they don't do.
+  function renderFilters(){
+    var el = document.getElementById("filters");
+    var present = {};
+    UPCOMING.concat(PAST).forEach(function(e){ if(e.kind) present[e.kind] = true; });
+    var kinds = KIND_ORDER.filter(function(k){ return present[k]; });
+    Object.keys(present).forEach(function(k){ if(KIND_ORDER.indexOf(k) < 0) kinds.push(k); });
+    currentFilter = "all";
+    if(kinds.length <= 1){ el.hidden = true; el.innerHTML = ""; return; }
+    el.hidden = false;
+    el.innerHTML = '<button class="chip active" data-f="all">All</button>' +
+      kinds.map(function(k){
+        return '<button class="chip" data-f="'+esc(k)+'">'+(KIND_EMOJI[k]||"🎫")+' '+esc(KIND_LABEL[k]||"Live")+'</button>';
+      }).join("");
+  }
   function renderUpcoming(filter){
     var list = document.getElementById("eventList");
     var f = filter||"all";
@@ -846,6 +859,7 @@
         document.getElementById("upcomingCount").textContent = UPCOMING.length;
         paintFollow();
         updateStatusPill();
+        renderFilters();
         renderUpcoming(currentFilter);
         renderPast();
       })
