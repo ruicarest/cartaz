@@ -17,6 +17,9 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   [hidden]{display:none!important}
+  /* File inputs must NOT be display:none — iOS Safari then refuses to open the
+     picker when the wrapping label is tapped. Hide them visually but keep them rendered. */
+  input[type="file"].sr-file{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);border:0;opacity:0}
   body{
     background:var(--bg);color:var(--text);min-height:100vh;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -138,7 +141,7 @@
 
   .hidden{display:none!important}
   .center{text-align:center;color:var(--muted-2);padding:26px 0;font-size:14px}
-  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);background:var(--text);color:#141414;font-weight:600;font-size:13px;padding:11px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:40}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);background:var(--text);color:#141414;font-weight:600;font-size:13px;padding:11px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
@@ -197,7 +200,7 @@
           <label>Profile photo (optional)</label>
           <label class="pic" id="pPic" style="margin-top:4px" title="Choose a photo">
             <span id="pPicInner">＋</span><span class="cam">✎</span>
-            <input type="file" id="pAvatarFile" accept="image/*" hidden />
+            <input type="file" id="pAvatarFile" accept="image/*" class="sr-file" />
           </label>
           <label>What do you do?</label>
           <div class="checks">
@@ -231,7 +234,7 @@
       <div class="dash-head">
         <label class="pic" id="dashPic" title="Change photo">
           <span id="dashPicInner"></span><span class="cam">✎</span>
-          <input type="file" id="dashAvatarFile" accept="image/*" hidden />
+          <input type="file" id="dashAvatarFile" accept="image/*" class="sr-file" />
         </label>
         <h1 id="dashName">&nbsp;</h1>
         <button class="btn btn-ghost btn-sm" id="editProfileBtn" style="margin-left:auto">✎ Edit profile</button>
@@ -347,7 +350,7 @@
       <label>Poster / image (optional)</label>
       <div class="poster-row">
         <span class="poster-thumb" id="evPosterThumb"><img id="evPosterImg" alt="" /></span>
-        <label class="btn btn-ghost btn-sm" style="cursor:pointer">Choose image<input type="file" id="fPosterFile" accept="image/*" hidden /></label>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">Choose image<input type="file" id="fPosterFile" accept="image/*" class="sr-file" /></label>
         <button type="button" class="btn btn-ghost btn-sm" id="evPosterClear" hidden>Remove</button>
       </div>
       <label for="fCoHandle">Co-artists <span style="color:var(--muted-2);font-weight:400">— the show appears on their page too</span></label>
