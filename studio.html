@@ -143,6 +143,9 @@
   .msg.ok{display:block;background:rgba(29,158,117,.12);border:1px solid rgba(29,158,117,.35);color:#7fd8b8}
 
   .hidden{display:none!important}
+  /* keep scrolling inside an open modal instead of chaining to the page behind */
+  .modal{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  body.modal-open{overflow:hidden}
   .center{text-align:center;color:var(--muted-2);padding:26px 0;font-size:14px}
   .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);background:var(--text);color:#141414;font-weight:600;font-size:13px;padding:11px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -386,8 +389,9 @@
   var $ = function(id){ return document.getElementById(id); };
   var toastEl=$("toast"), toastMsg=$("toastMsg"), tt;
   function toast(m){ toastMsg.textContent=m; toastEl.classList.add("show"); clearTimeout(tt); tt=setTimeout(function(){toastEl.classList.remove("show");},2200); }
-  function show(el){ el.classList.remove("hidden"); }
-  function hide(el){ el.classList.add("hidden"); }
+  function show(el){ el.classList.remove("hidden"); syncScrollLock(); }
+  function hide(el){ el.classList.add("hidden"); syncScrollLock(); }
+  function syncScrollLock(){ document.body.classList.toggle("modal-open", !!document.querySelector(".modal:not(.hidden)")); }
   function msg(el,text,kind){ el.textContent=text; el.className="msg "+(kind||"err"); if(!text) el.className="msg"; }
 
   // ---------- images: downscale in-browser, then upload (keeps storage tiny) ----------
