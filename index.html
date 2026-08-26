@@ -137,7 +137,20 @@
   .socials a:hover{color:var(--text);border-color:var(--muted-2);background:var(--surface-2)}
   .socials svg{width:17px;height:17px}
 
-  .follow-row{display:flex;gap:10px;margin:18px 2px 6px}
+  .follow-row{display:flex;align-items:center;gap:14px;margin:18px 2px 6px}
+  .bell-btn{
+    flex:0 0 auto;width:56px;height:56px;border-radius:16px;cursor:pointer;position:relative;
+    display:grid;place-items:center;background:var(--accent-soft);border:1px solid rgba(255,86,56,.45);color:var(--accent);
+    transition:transform .06s ease, background .15s, border-color .15s, color .15s;
+  }
+  .bell-btn:active{transform:scale(.96)}
+  .bell-btn .b-ico{width:25px;height:25px}
+  .bell-btn .b-check{display:none;position:absolute;right:-5px;bottom:-5px;width:22px;height:22px;border-radius:50%;background:#fff;color:var(--accent);place-items:center;border:2px solid var(--bg)}
+  .bell-btn .b-check svg{width:13px;height:13px}
+  .bell-btn.following{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 8px 22px rgba(255,86,56,.32)}
+  .bell-btn.following .b-ico{fill:rgba(255,255,255,.22)}
+  .bell-btn.following .b-check{display:grid}
+  .follow-hint{color:var(--muted);font-size:13px;line-height:1.35;margin:0}
   .btn{
     flex:1;border:none;cursor:pointer;font:inherit;font-weight:700;font-size:15px;
     padding:13px 16px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:8px;
@@ -349,22 +362,12 @@
     </div>
 
     <div class="follow-row">
-      <button class="btn btn-primary" id="followBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-        <span>Follow</span>
+      <button class="bell-btn" id="followBtn" type="button" aria-label="Follow to get notified about new shows">
+        <svg class="b-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <span class="b-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
       </button>
-      <button class="btn btn-ghost" id="notifyAll" aria-label="Notify me of every show" title="Notify me of every show">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
-      </button>
+      <p class="follow-hint" id="followHint">Follow — we'll email you about every new show.</p>
     </div>
-    <p class="hint">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
-      Follow and we'll ping you about the next show — no more stories that vanish.
-    </p>
-    <button class="btn-story" id="storyBtn" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg>
-      Share to Instagram Story
-    </button>
   </section>
 
   <div class="filters" id="filters" hidden></div>
@@ -648,7 +651,11 @@
   function paintFollow(){
     var f = LS.get("following", false);
     followBtn.classList.toggle("following", f);
-    followBtn.querySelector("span").textContent = f ? "Following" : "Follow";
+    followBtn.setAttribute("aria-pressed", f ? "true" : "false");
+    var fh = document.getElementById("followHint");
+    if(fh) fh.textContent = f
+      ? "You're following — we'll email you about every new show."
+      : "Follow — we'll email you about every new show.";
     if(followCount) followCount.textContent = fmt(BASE_FOLLOWERS);
   }
   function refreshFollowerCount(){
@@ -666,23 +673,6 @@
         LS.set("following", true); paintFollow();
         refreshFollowerCount();
         toast("Following "+ARTIST.name+" 🎭");
-      });
-    });
-  });
-  document.getElementById("notifyAll").addEventListener("click", function(){
-    if(!ARTIST || !UPCOMING.length){ toast("Still loading…"); return; }
-    captureEmail("Get an email reminder for every upcoming show.").then(function(email){
-      if(!email) return;
-      var calls = UPCOMING.map(function(e){ return sb.rpc("remind_event", {p_event:e.id, p_email:email}); });
-      calls.push(sb.rpc("follow_artist", {p_artist:ARTIST.id, p_email:email}));
-      Promise.all(calls).then(function(results){
-        var failed = results.filter(function(r){ return r && r.error; });
-        if(failed.length){ console.error(failed[0].error); toast("Couldn't subscribe — try again"); return; }
-        var reminders = {}; UPCOMING.forEach(function(e){ reminders[e.id]=true; });
-        LS.set("reminders", reminders);
-        LS.set("following", true); paintFollow(); refreshFollowerCount();
-        renderUpcoming(currentFilter);
-        toast("Subscribed to all upcoming shows 🔔");
       });
     });
   });
@@ -755,57 +745,6 @@
     });
   });
 
-  // ---------- share to Instagram story ----------
-  function loadImg(src){ return new Promise(function(res,rej){ var i=new Image(); i.onload=function(){res(i);}; i.onerror=rej; i.src=src; }); }
-  function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
-  function clip(g,text,maxW){ var t=String(text||""); if(g.measureText(t).width<=maxW) return t; while(t.length>1 && g.measureText(t+"…").width>maxW) t=t.slice(0,-1); return t+"…"; }
-  function genStory(){
-    var W=1080,H=1920, c=document.createElement("canvas"); c.width=W;c.height=H; var g=c.getContext("2d");
-    var SANS='-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif';
-    g.fillStyle="#0e0e12"; g.fillRect(0,0,W,H);
-    var rg=g.createRadialGradient(W/2,-150,60,W/2,-150,1400); rg.addColorStop(0,"rgba(255,86,56,.30)"); rg.addColorStop(1,"rgba(255,86,56,0)");
-    g.fillStyle=rg; g.fillRect(0,0,W,H);
-    return loadImg("logo-dark.png").then(function(logo){
-      // Livez brand, centered at top (coral chip + wordmark)
-      var chip=104, chipY=150;
-      g.font="800 76px "+SANS;
-      var word="Livez", ww=g.measureText(word).width, gap=24, groupW=chip+gap+ww, startX=(W-groupW)/2;
-      g.fillStyle="#ff5638"; roundRect(g,startX,chipY,chip,chip,28); g.fill();
-      var lw=chip*0.6, lh=lw*(logo.height/logo.width); g.drawImage(logo, startX+(chip-lw)/2, chipY+(chip-lh)/2, lw, lh);
-      g.textAlign="left"; g.textBaseline="middle"; g.fillStyle="#f5f3ef"; g.fillText(word, startX+chip+gap, chipY+chip/2); g.textBaseline="alphabetic";
-      // artist name
-      g.textAlign="center"; g.fillStyle="#f5f3ef"; g.font="800 88px "+SANS; g.fillText(clip(g,ARTIST.name,980), W/2, 400);
-      // upcoming shows (the focus)
-      g.textAlign="left"; g.fillStyle="#ffc24b"; g.font="700 38px "+SANS; g.fillText("UPCOMING SHOWS", 90, 520);
-      var y=580;
-      UPCOMING.slice(0,6).forEach(function(e){
-        g.fillStyle="#16161d"; roundRect(g,90,y,160,140,22); g.fill();
-        g.textAlign="center"; g.fillStyle="#f5f3ef"; g.font="800 64px "+SANS; g.fillText(e.day,170,y+76);
-        g.fillStyle="#ffc24b"; g.font="700 30px "+SANS; g.fillText(String(e.month).toUpperCase(),170,y+116);
-        g.textAlign="left"; g.fillStyle="#f5f3ef"; g.font="700 48px "+SANS; g.fillText(clip(g,e.title,730), 285, y+64);
-        g.fillStyle="#9c99a6"; g.font="400 34px "+SANS; g.fillText(clip(g,e.venue,730), 285, y+114);
-        y += 196;
-      });
-      if(!UPCOMING.length){ g.textAlign="center"; g.fillStyle="#9c99a6"; g.font="400 44px "+SANS; g.fillText("New dates coming soon.", W/2, y+40); }
-      // footer: just the link
-      g.textAlign="center"; g.fillStyle="#9c99a6"; g.font="600 40px "+SANS; g.fillText("livez.art/"+ARTIST.handle, W/2, H-100);
-      return new Promise(function(res){ c.toBlob(function(b){ res(b); }, "image/png"); });
-    });
-  }
-  document.getElementById("storyBtn").addEventListener("click", function(){
-    if(!ARTIST){ toast("Still loading…"); return; }
-    toast("Building your story…");
-    genStory().then(function(blob){
-      var file=new File([blob], "livez-"+ARTIST.handle+".png", {type:"image/png"});
-      if(navigator.canShare && navigator.canShare({files:[file]})){
-        navigator.share({files:[file], title:ARTIST.name+" · Livez", text:"Upcoming shows"}).catch(function(){});
-      } else {
-        var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=file.name; a.click();
-        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
-        toast("Story image saved — post it to your IG story 📸");
-      }
-    }).catch(function(err){ console.error("story", err); toast("Couldn't build the story image"); });
-  });
   document.addEventListener("click", function(e){
     var cp = e.target.closest('[data-copy]');
     if(cp){

@@ -258,6 +258,10 @@
           <button class="btn btn-ghost btn-sm" id="copyBtn" type="button">Copy</button>
           <a class="btn btn-ghost btn-sm" id="publicLink" target="_blank" rel="noopener">Open</a>
         </div>
+        <button class="btn btn-ghost" id="storyBtn" type="button" style="width:100%;margin-top:10px">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg>
+          Share to Instagram Story
+        </button>
       </div>
 
       <div id="invitesWrap" hidden>
@@ -661,6 +665,64 @@
         STATE.artist.avatar_url = newUrl; renderDashAvatar(); toast("Photo updated ✓");
       }).catch(function(err){ toast((err&&err.message)||"Upload failed"); }).then(function(){ pic.classList.remove("uploading"); });
     }).catch(function(err){ toast((err&&err.message)||"Couldn't read image"); });
+  });
+
+  // ---------- share to Instagram story (artist-only, from the dashboard) ----------
+  function loadImg(src){ return new Promise(function(res,rej){ var i=new Image(); i.onload=function(){res(i);}; i.onerror=rej; i.src=src; }); }
+  function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+  function clip(g,text,maxW){ var t=String(text||""); if(g.measureText(t).width<=maxW) return t; while(t.length>1 && g.measureText(t+"…").width>maxW) t=t.slice(0,-1); return t+"…"; }
+  function genStory(name, handle, ups){
+    var W=1080,H=1920, c=document.createElement("canvas"); c.width=W;c.height=H; var g=c.getContext("2d");
+    var SANS='-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif';
+    g.fillStyle="#0e0e12"; g.fillRect(0,0,W,H);
+    var rg=g.createRadialGradient(W/2,-150,60,W/2,-150,1400); rg.addColorStop(0,"rgba(255,86,56,.30)"); rg.addColorStop(1,"rgba(255,86,56,0)");
+    g.fillStyle=rg; g.fillRect(0,0,W,H);
+    return loadImg("logo-dark.png").then(function(logo){
+      var chip=104, chipY=150;
+      g.font="800 76px "+SANS;
+      var word="Livez", ww=g.measureText(word).width, gap=24, groupW=chip+gap+ww, startX=(W-groupW)/2;
+      g.fillStyle="#ff5638"; roundRect(g,startX,chipY,chip,chip,28); g.fill();
+      var lw=chip*0.6, lh=lw*(logo.height/logo.width); g.drawImage(logo, startX+(chip-lw)/2, chipY+(chip-lh)/2, lw, lh);
+      g.textAlign="left"; g.textBaseline="middle"; g.fillStyle="#f5f3ef"; g.fillText(word, startX+chip+gap, chipY+chip/2); g.textBaseline="alphabetic";
+      g.textAlign="center"; g.fillStyle="#f5f3ef"; g.font="800 88px "+SANS; g.fillText(clip(g,name,980), W/2, 400);
+      g.textAlign="left"; g.fillStyle="#ffc24b"; g.font="700 38px "+SANS; g.fillText("UPCOMING SHOWS", 90, 520);
+      var y=580;
+      ups.slice(0,6).forEach(function(e){
+        g.fillStyle="#16161d"; roundRect(g,90,y,160,140,22); g.fill();
+        g.textAlign="center"; g.fillStyle="#f5f3ef"; g.font="800 64px "+SANS; g.fillText(e.day,170,y+76);
+        g.fillStyle="#ffc24b"; g.font="700 30px "+SANS; g.fillText(String(e.month).toUpperCase(),170,y+116);
+        g.textAlign="left"; g.fillStyle="#f5f3ef"; g.font="700 48px "+SANS; g.fillText(clip(g,e.title,730), 285, y+64);
+        g.fillStyle="#9c99a6"; g.font="400 34px "+SANS; g.fillText(clip(g,e.venue,730), 285, y+114);
+        y += 196;
+      });
+      if(!ups.length){ g.textAlign="center"; g.fillStyle="#9c99a6"; g.font="400 44px "+SANS; g.fillText("New dates coming soon.", W/2, y+40); }
+      g.textAlign="center"; g.fillStyle="#9c99a6"; g.font="600 40px "+SANS; g.fillText("livez.art/"+handle, W/2, H-100);
+      return new Promise(function(res){ c.toBlob(function(b){ res(b); }, "image/png"); });
+    });
+  }
+  $("storyBtn").addEventListener("click", function(){
+    if(!STATE.artist){ toast("Still loading…"); return; }
+    toast("Building your story…");
+    sb.from("event_artists").select("event:events(title,starts_at,venue,city)").eq("artist_id", STATE.artist.id).eq("status","accepted")
+      .then(function(res){
+        if(res.error) throw res.error;
+        var now=Date.now();
+        var ups=(res.data||[]).map(function(x){return x.event;}).filter(Boolean)
+          .filter(function(e){ return new Date(e.starts_at).getTime() >= now; })
+          .sort(function(a,b){ return new Date(a.starts_at)-new Date(b.starts_at); })
+          .slice(0,6)
+          .map(function(e){ return {day:fmtDate(e.starts_at,"d"), month:fmtDate(e.starts_at,"m"), title:e.title, venue:[e.venue,e.city].filter(Boolean).join(" · ")}; });
+        return genStory(STATE.artist.name, STATE.artist.handle, ups);
+      }).then(function(blob){
+        var file=new File([blob], "livez-"+STATE.artist.handle+".png", {type:"image/png"});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          navigator.share({files:[file], title:STATE.artist.name+" · Livez", text:"Upcoming shows"}).catch(function(){});
+        } else {
+          var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=file.name; a.click();
+          setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
+          toast("Story image saved — post it to your IG story 📸");
+        }
+      }).catch(function(err){ console.error("story", err); toast("Couldn't build the story image"); });
   });
 
   // ---------- profile create ----------
