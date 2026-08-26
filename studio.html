@@ -309,6 +309,23 @@
   </div>
 </div>
 
+<!-- circular photo cropper -->
+<div class="modal hidden" id="cropModal" style="position:fixed;inset:0;z-index:55;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;overflow:auto;padding:20px 12px">
+  <div class="card" style="max-width:340px;width:100%">
+    <h2 style="margin:0 0 3px">Adjust your photo</h2>
+    <p style="color:var(--muted);font-size:13px;margin:0 0 14px">Drag to reposition · slide to zoom</p>
+    <div id="cropView" style="position:relative;width:260px;height:260px;max-width:100%;margin:0 auto;overflow:hidden;border-radius:14px;background:#000;touch-action:none;cursor:grab">
+      <img id="cropImg" alt="" style="position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;pointer-events:none;-webkit-user-drag:none;user-select:none" />
+      <div style="position:absolute;inset:0;pointer-events:none;border-radius:50%;box-shadow:0 0 0 999px rgba(0,0,0,.55);outline:1px solid rgba(255,255,255,.35);outline-offset:-1px"></div>
+    </div>
+    <input id="cropZoom" type="range" min="1" max="3" step="0.01" value="1" aria-label="Zoom" style="width:100%;margin:16px 0 2px" />
+    <div class="row" style="margin-top:12px">
+      <button type="button" class="btn btn-ghost" id="cropCancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="cropSave"><span>Save photo</span></button>
+    </div>
+  </div>
+</div>
+
 <!-- event editor sheet -->
 <div class="modal hidden" id="evModal" style="position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px">
   <div class="card" style="max-width:520px;width:100%">
@@ -562,28 +579,92 @@
     if(STATE.artist && STATE.artist.avatar_url){ el.innerHTML='<img src="'+esc(STATE.artist.avatar_url)+'" alt="">'; }
     else { el.textContent = (STATE.artist && coInitials(STATE.artist.name)) || "?"; }
   }
+  // ---------- circular photo cropper (drag to reposition + zoom, exports a square crop) ----------
+  var CROP_VIEW=260, CROP_OUT=512;
+  var cropModal=$("cropModal"), cropView=$("cropView"), cropImg=$("cropImg"), cropZoom=$("cropZoom");
+  var cropState=null, cropResolve=null;
+  function cropEffScale(){ return cropState.base * parseFloat(cropZoom.value); }
+  function cropClamp(){
+    var s=cropEffScale();
+    cropState.tx=Math.min(0, Math.max(CROP_VIEW - cropState.nw*s, cropState.tx));
+    cropState.ty=Math.min(0, Math.max(CROP_VIEW - cropState.nh*s, cropState.ty));
+  }
+  function cropApply(){
+    cropClamp();
+    cropImg.style.transform="translate("+cropState.tx+"px,"+cropState.ty+"px) scale("+cropEffScale()+")";
+  }
+  function openCropper(file){
+    return new Promise(function(resolve, reject){
+      if(!/^image\//.test(file.type)){ reject(new Error("Please choose an image file.")); return; }
+      if(file.size > 10*1024*1024){ reject(new Error("That image is too big (max 10MB).")); return; }
+      var url=URL.createObjectURL(file); var im=new Image();
+      im.onload=function(){
+        cropImg.src=url;
+        var base=Math.max(CROP_VIEW/im.naturalWidth, CROP_VIEW/im.naturalHeight);
+        cropState={img:im, url:url, nw:im.naturalWidth, nh:im.naturalHeight, base:base, tx:0, ty:0, last:base};
+        cropZoom.value=1;
+        cropState.tx=(CROP_VIEW - im.naturalWidth*base)/2;
+        cropState.ty=(CROP_VIEW - im.naturalHeight*base)/2;
+        cropApply(); cropResolve=resolve; show(cropModal);
+      };
+      im.onerror=function(){ URL.revokeObjectURL(url); reject(new Error("Could not read that image.")); };
+      im.src=url;
+    });
+  }
+  cropZoom.addEventListener("input", function(){
+    var sOld=cropState.last, sNew=cropEffScale(), c=CROP_VIEW/2;
+    cropState.tx=c-((c-cropState.tx)/sOld)*sNew;
+    cropState.ty=c-((c-cropState.ty)/sOld)*sNew;
+    cropState.last=sNew; cropApply();
+  });
+  (function(){
+    var dragging=false, lx=0, ly=0;
+    cropView.addEventListener("pointerdown", function(e){ dragging=true; lx=e.clientX; ly=e.clientY; try{cropView.setPointerCapture(e.pointerId);}catch(_){} cropView.style.cursor="grabbing"; });
+    cropView.addEventListener("pointermove", function(e){ if(!dragging)return; cropState.tx+=e.clientX-lx; cropState.ty+=e.clientY-ly; lx=e.clientX; ly=e.clientY; cropApply(); });
+    function end(){ dragging=false; cropView.style.cursor="grab"; }
+    cropView.addEventListener("pointerup", end); cropView.addEventListener("pointercancel", end);
+  })();
+  $("cropCancel").addEventListener("click", function(){
+    if(cropState) URL.revokeObjectURL(cropState.url);
+    hide(cropModal); var r=cropResolve; cropResolve=null; if(r) r(null);
+  });
+  $("cropSave").addEventListener("click", function(){
+    var s=cropEffScale(), f=CROP_OUT/CROP_VIEW;
+    var cv=document.createElement("canvas"); cv.width=CROP_OUT; cv.height=CROP_OUT;
+    var g=cv.getContext("2d"); g.fillStyle="#111"; g.fillRect(0,0,CROP_OUT,CROP_OUT);
+    g.drawImage(cropState.img, cropState.tx*f, cropState.ty*f, cropState.nw*s*f, cropState.nh*s*f);
+    URL.revokeObjectURL(cropState.url);
+    cv.toBlob(function(blob){ hide(cropModal); var r=cropResolve; cropResolve=null; if(r) r(blob); }, "image/jpeg", 0.9);
+  });
+
   $("dashAvatarFile").addEventListener("change", function(){
-    var f=this.files[0]; if(!f) return;
-    var pic=$("dashPic"); pic.classList.add("uploading");
-    var newUrl;
-    uploadImage("avatars", f).then(function(url){
-      newUrl = url;
-      return sb.from("artists").update({avatar_url:url}).eq("id", STATE.artist.id);
-    }).then(function(r){
-      if(r && r.error) throw r.error;
-      STATE.artist.avatar_url = newUrl; renderDashAvatar(); toast("Photo updated ✓");
-    }).catch(function(err){ toast((err&&err.message)||"Upload failed"); }).then(function(){ pic.classList.remove("uploading"); });
+    var f=this.files[0]; this.value=""; if(!f) return;
+    openCropper(f).then(function(blob){
+      if(!blob) return;
+      var pic=$("dashPic"); pic.classList.add("uploading");
+      var newUrl;
+      uploadImage("avatars", blob).then(function(url){
+        newUrl = url;
+        return sb.from("artists").update({avatar_url:url}).eq("id", STATE.artist.id);
+      }).then(function(r){
+        if(r && r.error) throw r.error;
+        STATE.artist.avatar_url = newUrl; renderDashAvatar(); toast("Photo updated ✓");
+      }).catch(function(err){ toast((err&&err.message)||"Upload failed"); }).then(function(){ pic.classList.remove("uploading"); });
+    }).catch(function(err){ toast((err&&err.message)||"Couldn't read image"); });
   });
 
   // ---------- profile create ----------
   var pAvatarUrl = null;
   $("pAvatarFile").addEventListener("change", function(){
-    var f=this.files[0]; if(!f) return;
-    var pic=$("pPic"); pic.classList.add("uploading"); msg($("profileMsg"),"");
-    uploadImage("avatars", f).then(function(url){
-      pAvatarUrl=url; $("pPicInner").innerHTML='<img src="'+esc(url)+'" alt="">';
-    }).catch(function(err){ msg($("profileMsg"), (err&&err.message)||"Upload failed","err"); })
-      .then(function(){ pic.classList.remove("uploading"); });
+    var f=this.files[0]; this.value=""; if(!f) return;
+    openCropper(f).then(function(blob){
+      if(!blob) return;
+      var pic=$("pPic"); pic.classList.add("uploading"); msg($("profileMsg"),"");
+      uploadImage("avatars", blob).then(function(url){
+        pAvatarUrl=url; $("pPicInner").innerHTML='<img src="'+esc(url)+'" alt="">';
+      }).catch(function(err){ msg($("profileMsg"), (err&&err.message)||"Upload failed","err"); })
+        .then(function(){ pic.classList.remove("uploading"); });
+    }).catch(function(err){ msg($("profileMsg"), (err&&err.message)||"Couldn't read image","err"); });
   });
   $("profileForm").addEventListener("submit", function(e){
     e.preventDefault();
