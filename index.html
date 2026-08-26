@@ -719,9 +719,10 @@
   });
 
   document.getElementById("shareBtn").addEventListener("click", function(){
-    var url = location.href;
-    if(navigator.share){ navigator.share({title:"Miguel Tavares on Livez", url:url}).catch(function(){}); }
-    else if(navigator.clipboard){ navigator.clipboard.writeText(url); toast("Link copied ✓"); }
+    var url = ARTIST ? ("https://livez.art/" + ARTIST.handle) : location.href;
+    var title = ARTIST ? (ARTIST.name + " on Livez") : "Livez";
+    if(navigator.share){ navigator.share({title:title, text:"Upcoming shows — follow to never miss one.", url:url}).catch(function(){}); }
+    else if(navigator.clipboard){ navigator.clipboard.writeText(url).then(function(){ toast("Link copied ✓"); }); }
     else { toast(url); }
   });
   // "Create my Livez" navigates to the Studio (href="studio.html").
@@ -838,6 +839,22 @@
         renderFacets(artist);
         renderSocials(artist);
         document.title = "Livez · " + artist.name;
+        // point the page's metadata at this profile (helps native share sheets and
+        // any target that reads og:url/canonical instead of the passed URL)
+        (function(){
+          var profileUrl = "https://livez.art/" + artist.handle;
+          var desc = artist.bio || (artist.name + " — upcoming live shows and tickets on Livez.");
+          var setMeta = function(sel, val){ var m=document.querySelector(sel); if(m) m.setAttribute("content", val); };
+          setMeta('meta[property="og:url"]', profileUrl);
+          setMeta('meta[property="og:title"]', artist.name + " — Livez");
+          setMeta('meta[property="og:description"]', desc);
+          setMeta('meta[name="twitter:title"]', artist.name + " — Livez");
+          setMeta('meta[name="twitter:description"]', desc);
+          setMeta('meta[name="description"]', desc);
+          var can=document.querySelector('link[rel="canonical"]');
+          if(!can){ can=document.createElement("link"); can.rel="canonical"; document.head.appendChild(can); }
+          can.href = profileUrl;
+        })();
 
         var evP = sb.from("event_artists")
           .select("event:events(id,title,kind,venue,city,starts_at,ticket_url,ticket_status,price_cents,currency,booking_note,image_url,lineup:event_artists(role,status,artist:artists(name,handle)))")
