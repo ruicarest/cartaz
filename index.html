@@ -96,16 +96,18 @@
   .share:hover{background:var(--surface-2);border-color:var(--muted-2)}
   .share svg{width:17px;height:17px}
 
-  .profile{text-align:center;padding:10px 8px 4px}
+  .profile{text-align:left;padding:8px 4px 4px}
+  .p-top{display:flex;align-items:center;gap:15px}
+  .p-id{flex:1;min-width:0}
   .avatar{
-    width:104px;height:104px;border-radius:50%;margin:0 auto 14px;
+    width:92px;height:92px;border-radius:50%;margin:0;flex:0 0 auto;
     background:linear-gradient(150deg,#3a2b4d,#5a2f2a);
-    display:grid;place-items:center;font-size:40px;font-weight:700;
+    display:grid;place-items:center;font-size:34px;font-weight:700;
     border:2px solid rgba(255,255,255,.16);box-shadow:0 12px 34px rgba(0,0,0,.5);position:relative;overflow:hidden;
   }
   .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
   .status{
-    display:inline-flex;align-items:center;gap:7px;margin-top:10px;
+    display:inline-flex;align-items:center;gap:7px;margin:0 0 8px;
     background:var(--accent-soft);border:1px solid rgba(255,86,56,.3);
     color:#ff9576;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:20px;
   }
@@ -120,19 +122,20 @@
   }
   @media (prefers-reduced-motion:reduce){ .status .pulse{animation:none} }
   h1{font-size:24px;letter-spacing:-.02em;font-weight:800;line-height:1.1}
-  .handle{color:var(--muted);font-size:14px;margin-top:3px}
-  .facet-tags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:12px 0 6px}
+  .handle{color:var(--muted);font-size:14px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .facet-tags{display:flex;gap:6px;justify-content:flex-start;flex-wrap:wrap;margin:9px 0 0}
   .facet-tags span{
     font-size:12px;color:var(--text);background:var(--surface-2);
     border:1px solid var(--line);padding:4px 10px;border-radius:20px;
   }
-  .bio{color:var(--muted);font-size:14px;max-width:340px;margin:10px auto 0}
-  .meta{display:flex;gap:16px;justify-content:center;margin-top:14px;color:var(--muted);font-size:13px}
+  .bio{color:var(--muted);font-size:14px;max-width:none;margin:13px 0 0}
+  .meta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:15px;flex-wrap:wrap}
+  .meta{display:flex;gap:16px;justify-content:flex-start;color:var(--muted);font-size:13px}
   .meta b{color:var(--text);font-weight:700}
-  .socials{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
-  .socials a{width:38px;height:38px;border-radius:11px;border:1px solid var(--line-strong);color:var(--muted);display:grid;place-items:center;transition:color .15s,border-color .15s,background .15s}
+  .socials{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+  .socials a{width:36px;height:36px;border-radius:10px;border:1px solid var(--line-strong);color:var(--muted);display:grid;place-items:center;transition:color .15s,border-color .15s,background .15s}
   .socials a:hover{color:var(--text);border-color:var(--muted-2);background:var(--surface-2)}
-  .socials svg{width:18px;height:18px}
+  .socials svg{width:17px;height:17px}
 
   .follow-row{display:flex;gap:10px;margin:18px 2px 6px}
   .btn{
@@ -328,16 +331,21 @@
   </div>
 
   <section class="profile">
-    <div class="avatar">MT</div>
-    <h1>&nbsp;</h1>
-    <div class="handle">&nbsp;</div>
-    <div class="status"><span class="pulse"></span> &nbsp;</div>
-    <div class="facet-tags" id="facetTags" style="display:none"></div>
+    <div class="p-top">
+      <div class="avatar">MT</div>
+      <div class="p-id">
+        <div class="status"><span class="pulse"></span> &nbsp;</div>
+        <h1>&nbsp;</h1>
+        <div class="handle">&nbsp;</div>
+        <div class="facet-tags" id="facetTags" style="display:none"></div>
+      </div>
+    </div>
     <p class="bio">&nbsp;</p>
-    <div class="socials" id="socials" style="display:none"></div>
-    <div class="meta">
-      <span><b id="followCount">–</b> followers</span>
-      <span><b id="upcomingCount">–</b> upcoming shows</span>
+    <div class="meta-row">
+      <div class="meta">
+        <span id="upcomingStat"></span>
+      </div>
+      <div class="socials" id="socials" style="display:none"></div>
     </div>
 
     <div class="follow-row">
@@ -641,7 +649,7 @@
     var f = LS.get("following", false);
     followBtn.classList.toggle("following", f);
     followBtn.querySelector("span").textContent = f ? "Following" : "Follow";
-    followCount.textContent = fmt(BASE_FOLLOWERS);
+    if(followCount) followCount.textContent = fmt(BASE_FOLLOWERS);
   }
   function refreshFollowerCount(){
     if(!ARTIST) return;
@@ -873,7 +881,8 @@
         UPCOMING = norm.filter(function(e){ return new Date(e.starts_at).getTime() >= now; });
         PAST     = norm.filter(function(e){ return new Date(e.starts_at).getTime() <  now; }).reverse();
 
-        document.getElementById("upcomingCount").textContent = UPCOMING.length;
+        var us=document.getElementById("upcomingStat");
+        if(us) us.innerHTML = UPCOMING.length ? ('<b>'+UPCOMING.length+'</b> upcoming '+(UPCOMING.length===1?'show':'shows')) : 'No upcoming shows yet';
         paintFollow();
         updateStatusPill();
         renderFilters();
