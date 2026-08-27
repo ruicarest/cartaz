@@ -148,6 +148,10 @@
   .bell-btn.following{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 8px 22px rgba(255,86,56,.32)}
   .bell-btn.following .b-ico{fill:rgba(255,255,255,.22)}
   .bell-btn.following .b-check{display:grid}
+  .bell-btn.bell-sm{width:40px;height:40px;border-radius:12px}
+  .bell-sm .b-ico{width:19px;height:19px}
+  .bell-sm .b-check{width:17px;height:17px;right:-4px;bottom:-4px}
+  .bell-sm .b-check svg{width:11px;height:11px}
   .btn{
     flex:1;border:none;cursor:pointer;font:inherit;font-weight:700;font-size:15px;
     padding:13px 16px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:8px;
@@ -186,6 +190,9 @@
   .sec-count{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:20px;padding:1px 9px;font-size:11px;letter-spacing:0;font-weight:700}
   .sec-count:empty{display:none}
   .sec-label::after{content:"";flex:1;height:1px;background:var(--line)}
+  .sec-head::after{content:none}
+  .sec-head{margin-top:14px}
+  .sec-rule{flex:1;height:1px;background:var(--line)}
 
   .event{
     display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);
@@ -349,17 +356,18 @@
     <div class="status"><span class="pulse"></span> &nbsp;</div>
     <p class="bio">&nbsp;</p>
     <div class="socials" id="socials" style="display:none"></div>
-    <div class="follow-row">
-      <button class="bell-btn" id="followBtn" type="button" aria-label="Follow to get notified about new shows" title="Follow — get an email about every new show">
-        <svg class="b-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
-        <span class="b-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-      </button>
-    </div>
   </section>
 
   <div class="filters" id="filters" hidden></div>
 
-  <div class="sec-label">Upcoming shows<span id="upcomingCount" class="sec-count"></span></div>
+  <div class="sec-label sec-head">
+    Upcoming shows<span id="upcomingCount" class="sec-count"></span>
+    <span class="sec-rule"></span>
+    <button class="bell-btn bell-sm" id="followBtn" type="button" aria-label="Follow to get notified about new shows" title="Follow — get an email about every new show">
+      <svg class="b-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      <span class="b-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    </button>
+  </div>
   <div id="eventList"><div class="empty">Loading shows…</div></div>
 
   <div class="sec-label">Past shows</div>
