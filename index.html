@@ -127,6 +127,15 @@
     border:1px solid var(--line);padding:4px 10px;border-radius:20px;
   }
   .bio{color:var(--muted);font-size:14px;max-width:420px;margin:12px auto 0}
+  /* loading skeletons */
+  @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+  .skel{display:inline-block;background:linear-gradient(90deg,var(--surface-2) 25%,var(--line) 37%,var(--surface-2) 63%);background-size:200% 100%;animation:shimmer 1.4s ease infinite;border-radius:8px;vertical-align:middle}
+  .sk-h1{width:190px;height:26px;border-radius:9px}
+  .sk-handle{width:150px;height:15px;margin-top:8px}
+  .sk-bio{width:230px;height:14px;margin-top:10px}
+  .av-skel{position:absolute;inset:0;border-radius:50%;background:linear-gradient(90deg,var(--surface-2) 25%,var(--line) 37%,var(--surface-2) 63%);background-size:200% 100%;animation:shimmer 1.4s ease infinite}
+  .ev-skel{height:112px;border-radius:16px;margin-bottom:10px;background:linear-gradient(90deg,var(--surface) 25%,var(--surface-2) 37%,var(--surface) 63%);background-size:200% 100%;animation:shimmer 1.4s ease infinite;border:1px solid var(--line)}
+  @media (prefers-reduced-motion:reduce){.skel,.av-skel,.ev-skel{animation:none}}
   .meta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:15px;flex-wrap:wrap}
   .meta{display:flex;gap:16px;justify-content:flex-start;color:var(--muted);font-size:13px}
   .meta b{color:var(--text);font-weight:700}
@@ -350,11 +359,11 @@
   </div>
 
   <section class="profile">
-    <div class="avatar">MT</div>
-    <h1>&nbsp;</h1>
-    <div class="handle">&nbsp;</div>
-    <div class="status"><span class="pulse"></span> &nbsp;</div>
-    <p class="bio">&nbsp;</p>
+    <div class="avatar"><span class="av-skel"></span></div>
+    <h1><span class="skel sk-h1"></span></h1>
+    <div class="handle"><span class="skel sk-handle"></span></div>
+    <div class="status" style="display:none"><span class="pulse"></span> &nbsp;</div>
+    <p class="bio"><span class="skel sk-bio"></span></p>
     <div class="socials" id="socials" style="display:none"></div>
   </section>
 
@@ -368,7 +377,7 @@
       <span class="b-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
     </button>
   </div>
-  <div id="eventList"><div class="empty">Loading shows…</div></div>
+  <div id="eventList"><div class="ev-skel"></div><div class="ev-skel"></div></div>
 
   <div class="sec-label">Past shows</div>
   <div class="past" id="pastList"></div>
@@ -777,7 +786,7 @@
         else { av.textContent = initials(artist.name) || "★"; }
         document.querySelector(".app h1").textContent = artist.name;
         document.querySelector(".handle").textContent = "livez.art/" + artist.handle;
-        if(artist.bio) document.querySelector(".bio").textContent = artist.bio;
+        document.querySelector(".bio").textContent = artist.bio || "";
         renderFacets(artist);
         renderSocials(artist);
         document.title = "Livez · " + artist.name;
