@@ -363,7 +363,6 @@
       </div>
     </div>
     <p class="bio">&nbsp;</p>
-    <div class="facet-tags" id="facetTags" style="display:none"></div>
   </section>
 
   <div class="filters" id="filters" hidden></div>
@@ -546,6 +545,7 @@
   }
   function renderFacets(a){
     var el=document.getElementById("facetTags");
+    if(!el) return;   // facets are managed in the Studio; not shown on the public profile for now
     var f=Array.isArray(a.facets)?a.facets:[];
     var html=f.map(function(x){ var icon=(x&&x.icon)||"✨", label=(x&&x.label)||""; return '<span>'+esc(icon)+' '+esc(label)+'</span>'; }).join("");
     el.innerHTML=html; el.style.display = html ? "flex" : "none";
