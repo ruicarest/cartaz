@@ -1114,9 +1114,7 @@
         var rows = toAdd.map(function(id){ return {event_id:eventId, artist_id:id, role:"cast", can_edit:false, status:"pending"}; });
         var link = await sb.from("event_artists").insert(rows);
         if(link.error) throw link.error;
-        // email the invited co-artists (best-effort — never block the save)
-        sb.functions.invoke("invite-coartist", { body: { event_id: eventId, artist_ids: toAdd } })
-          .catch(function(e){ console.warn("invite email skipped", e); });
+        // (invited co-artists are emailed automatically by a DB trigger on insert)
       }
       toast(STATE.editing ? "Show updated ✓" : coDraft.length ? "Shared show published 🎉" : "Show published 🎉");
       return true;
