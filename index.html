@@ -209,7 +209,10 @@
     transition:border-color .15s, transform .12s;
   }
   .event-main{display:flex;gap:14px}
-  .ev-poster{width:100%;max-height:190px;object-fit:cover;border-radius:12px;margin-bottom:12px;display:block}
+  .ev-poster{width:100%;max-height:190px;object-fit:cover;border-radius:12px;margin-bottom:12px;display:block;cursor:zoom-in}
+  .lightbox{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;cursor:zoom-out}
+  .lightbox.show{opacity:1;pointer-events:auto}
+  .lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px;box-shadow:0 24px 70px rgba(0,0,0,.6)}
   .event:hover{border-color:var(--line-strong)}
   .event.collab{border-color:rgba(255,194,75,.28);background:linear-gradient(180deg,rgba(255,194,75,.06),var(--surface))}
   .datebox{
@@ -419,6 +422,8 @@
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
   <span id="toastMsg">Done</span>
 </div>
+
+<div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-label="Event poster"><img id="lightboxImg" alt="Event poster" /></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -759,6 +764,17 @@
       } else { toast(v); }
     }
   });
+
+  // ---------- tap an event poster to enlarge (lightbox) ----------
+  var lightbox = document.getElementById("lightbox");
+  var lightboxImg = document.getElementById("lightboxImg");
+  function closeLightbox(){ lightbox.classList.remove("show"); lightbox.setAttribute("aria-hidden","true"); lightboxImg.removeAttribute("src"); }
+  document.addEventListener("click", function(e){
+    var p = e.target.closest(".ev-poster");
+    if(p){ lightboxImg.src = p.currentSrc || p.src; lightbox.classList.add("show"); lightbox.setAttribute("aria-hidden","false"); return; }
+    if(e.target.closest("#lightbox")) closeLightbox();
+  });
+  document.addEventListener("keydown", function(e){ if(e.key==="Escape" && lightbox.classList.contains("show")) closeLightbox(); });
 
   function updateStatusPill(){
     var el = document.querySelector(".status");
