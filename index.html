@@ -97,6 +97,10 @@
   }
   .share:hover{background:var(--surface-2);border-color:var(--muted-2)}
   .share svg{width:17px;height:17px}
+  .me-link{width:38px;height:38px;border-radius:50%;overflow:hidden;border:1px solid var(--line-strong);background:var(--surface-2);display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--muted);flex:0 0 auto;text-decoration:none;cursor:pointer}
+  .me-link img{width:100%;height:100%;object-fit:cover}
+  .me-link:hover{border-color:var(--muted-2)}
+  .me-landing{position:fixed;top:14px;right:14px;z-index:20}
 
   .profile{text-align:center;padding:14px 8px 4px}
   .avatar{
@@ -333,6 +337,7 @@
 </head>
 <body>
 <div class="landing" id="landing" hidden>
+  <a class="me-link me-landing" id="meLinkL" hidden title="Go to your page" aria-label="Your page"></a>
   <div class="lwrap">
     <div class="l-brand"><span class="dot"><img src="logo-dark.png" alt="" /></span> Livez</div>
     <h1 class="l-hero">One link for every show you do.</h1>
@@ -354,7 +359,8 @@
 
   <div class="brandbar">
     <div class="brand"><span class="dot"><img src="logo-dark.png" alt="" /></span> Livez <small>&nbsp;· beta</small></div>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;align-items:center">
+      <a class="me-link" id="meLink" hidden title="Go to your page" aria-label="Your page"></a>
       <a class="share" id="ownerEdit" href="studio.html" title="Edit your page" hidden aria-label="Edit your page">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
       </a>
@@ -861,7 +867,29 @@
     var app=document.querySelector(".app"); if(app) app.style.display="none";
     var l=document.getElementById("landing"); if(l) l.hidden=false;
   }
+  // If the viewer is signed in, show their avatar in the header linking to their page,
+  // so they can jump from anyone's profile (or the landing) back to their own.
+  function fillMe(el, me){
+    if(!el) return;
+    if(me.avatar_url) el.innerHTML = '<img src="'+esc(me.avatar_url)+'" alt="" />';
+    else el.textContent = initials(me.name) || "★";
+    el.href = "/" + me.handle;
+    el.hidden = false;
+  }
+  function initMe(){
+    sb.auth.getSession().then(function(s){
+      var u = s.data.session && s.data.session.user;
+      if(!u) return;
+      sb.from("artists").select("handle,name,avatar_url").eq("owner_id", u.id).maybeSingle().then(function(r){
+        var me = r.data; if(!me) return;
+        if(HANDLE){ if(me.handle !== HANDLE) fillMe(document.getElementById("meLink"), me); }
+        else { fillMe(document.getElementById("meLinkL"), me); }
+      });
+    });
+  }
+
   if(HANDLE){ load(); } else { showLanding(); }
+  initMe();
 })();
 </script>
 </body>

@@ -853,8 +853,9 @@
   }
   function leaveShow(id){
     if(!confirm("Remove this show from your page? The other artists keep it — you can be re-invited later.")) return;
-    sb.from("event_artists").delete().eq("event_id", id).eq("artist_id", STATE.artist.id).then(function(res){
+    sb.from("event_artists").delete().eq("event_id", id).eq("artist_id", STATE.artist.id).select("event_id").then(function(res){
       if(res.error){ toast("Couldn't remove"); console.error(res.error); return; }
+      if(!res.data || !res.data.length){ toast("Couldn't remove — please sign out and in again"); return; }
       toast("Removed from your page"); loadEvents();
     });
   }
@@ -862,8 +863,9 @@
 
   function delEvent(id){
     if(!confirm("Delete this show? This cannot be undone.")) return;
-    sb.from("events").delete().eq("id", id).then(function(res){
+    sb.from("events").delete().eq("id", id).select("id").then(function(res){
       if(res.error){ toast("Couldn't delete"); console.error(res.error); return; }
+      if(!res.data || !res.data.length){ toast("Couldn't delete — please sign out and in again"); return; }
       toast("Show deleted"); loadEvents();
     });
   }
