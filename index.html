@@ -251,7 +251,12 @@
     margin-left:-8px;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;
   }
   .stack .a:first-child{margin-left:0}
-  .collab-note{font-size:12px;color:var(--accent-2);font-weight:600}
+  .collab-note{font-size:12px;color:var(--accent-2);font-weight:600;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px}
+  .collab-note .chev{font-size:10px;transition:transform .15s}
+  .collab-note.open .chev{transform:rotate(180deg)}
+  .collab-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+  .collab-list a,.collab-list span{font-size:13px;color:var(--text);background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:4px 11px;text-decoration:none}
+  .collab-list a:hover{border-color:var(--muted-2)}
 
   .ev-actions{display:flex;gap:8px;margin-top:12px;align-items:center}
   .ticket{
@@ -532,7 +537,8 @@
       image: ev.image_url || null,
       price: priceStr(ev),
       starts_at: ev.starts_at,
-      collab: collab, collabNote: collabNote
+      collab: collab, collabNote: collabNote,
+      lineup: lineup.map(function(l){ return { name:(l.artist&&l.artist.name)||"?", handle:(l.artist&&l.artist.handle)||"" }; })
     };
   }
 
@@ -575,7 +581,13 @@
   function collabHTML(ev){
     if(!ev.collab) return "";
     var s = ev.collab.map(function(a){ return '<div class="a" style="background:'+esc(a.c)+'">'+esc(a.i)+'</div>'; }).join("");
-    return '<div class="collab-row"><div class="stack">'+s+'</div><span class="collab-note">'+esc(ev.collabNote)+'</span></div>';
+    var list = (ev.lineup||[]).map(function(l){
+      return l.handle ? '<a href="/'+esc(l.handle)+'">'+esc(l.name)+'</a>' : '<span>'+esc(l.name)+'</span>';
+    }).join("");
+    return '<div class="collab-wrap">'+
+      '<div class="collab-row"><div class="stack">'+s+'</div>'+
+        '<button class="collab-note" type="button" data-collab>'+esc(ev.collabNote)+' <span class="chev">▾</span></button></div>'+
+      '<div class="collab-list" hidden>'+list+'</div></div>';
   }
   function ticketHTML(ev){
     if(ev.ticket==="sold") return '<span class="ticket sold">Sold out</span>';
@@ -764,6 +776,13 @@
   });
 
   document.addEventListener("click", function(e){
+    var cb = e.target.closest('[data-collab]');
+    if(cb){
+      var wrap = cb.closest(".collab-wrap"); if(!wrap) return;
+      var list = wrap.querySelector(".collab-list");
+      var open = list.hidden; list.hidden = !open; cb.classList.toggle("open", open);
+      return;
+    }
     var cp = e.target.closest('[data-copy]');
     if(cp){
       e.preventDefault();
