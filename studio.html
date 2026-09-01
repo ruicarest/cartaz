@@ -805,22 +805,37 @@
 
   function loadEvents(){
     var el=$("eventList"); el.innerHTML='<div class="center">Loading…</div>';
-    sb.from("events").select("*").eq("created_by", STATE.user.id).order("starts_at",{ascending:true}).then(function(res){
-      if(res.error){ el.innerHTML='<div class="center">Couldn’t load shows.</div>'; console.error(res.error); return; }
-      var evs = res.data||[];
-      if(!evs.length){ el.innerHTML='<div class="center">No shows yet. Add your first one ↑</div>'; return; }
-      var now=Date.now();
+    var now=Date.now();
+    var ownP = sb.from("events").select("*").eq("created_by", STATE.user.id).order("starts_at",{ascending:true});
+    var guestP = sb.from("event_artists").select("event:events(id,title,starts_at,venue,city,created_by)")
+                   .eq("artist_id", STATE.artist.id).eq("status","accepted");
+    Promise.all([ownP, guestP]).then(function(out){
+      var ownRes=out[0], guestRes=out[1];
+      if(ownRes.error){ el.innerHTML='<div class="center">Couldn’t load shows.</div>'; console.error(ownRes.error); return; }
+      var evs = ownRes.data||[];
       var byId=function(id){ return evs.filter(function(e){return e.id===id;})[0]; };
+      // shows where I'm an accepted co-artist but did NOT create them
+      var guests = ((guestRes&&guestRes.data)||[]).map(function(x){return x.event;}).filter(Boolean)
+                     .filter(function(e){ return e && e.created_by !== STATE.user.id; })
+                     .sort(function(a,b){ return new Date(a.starts_at)-new Date(b.starts_at); });
+      if(!evs.length && !guests.length){ el.innerHTML='<div class="center">No shows yet. Add your first one ↑</div>'; return; }
+      function dateCell(ev){ return '<div class="d"><b>'+fmtDate(ev.starts_at,"d")+'</b><span>'+fmtDate(ev.starts_at,"m")+'</span></div>'; }
+      function infoCell(ev){ return '<div class="info"><div class="t">'+esc(ev.title)+'</div>'+
+          '<div class="m">'+fmtTime(ev.starts_at)+' · '+esc([ev.venue,ev.city].filter(Boolean).join(" · ")||"—")+'</div></div>'; }
       function rowHtml(ev){
         var past = new Date(ev.starts_at).getTime() < now;
-        return '<div class="ev'+(past?" past":"")+'">'+
-          '<div class="d"><b>'+fmtDate(ev.starts_at,"d")+'</b><span>'+fmtDate(ev.starts_at,"m")+'</span></div>'+
-          '<div class="info"><div class="t">'+esc(ev.title)+'</div>'+
-            '<div class="m">'+fmtTime(ev.starts_at)+' · '+esc([ev.venue,ev.city].filter(Boolean).join(" · ")||"—")+'</div></div>'+
+        return '<div class="ev'+(past?" past":"")+'">'+dateCell(ev)+infoCell(ev)+
           '<div class="acts">'+
             '<button class="btn btn-ghost btn-sm" data-copy-ev="'+ev.id+'" title="Duplicate">⧉</button>'+
             '<button class="btn btn-ghost btn-sm" data-edit="'+ev.id+'">Edit</button>'+
             '<button class="btn btn-danger btn-sm" data-del="'+ev.id+'" title="Delete">✕</button>'+
+          '</div></div>';
+      }
+      function guestRow(ev){
+        var past = new Date(ev.starts_at).getTime() < now;
+        return '<div class="ev'+(past?" past":"")+'">'+dateCell(ev)+infoCell(ev)+
+          '<div class="acts">'+
+            '<button class="btn btn-ghost btn-sm" data-leave="'+ev.id+'" title="Remove from your page">Leave</button>'+
           '</div></div>';
       }
       var up=evs.filter(function(e){return new Date(e.starts_at).getTime()>=now;});
@@ -828,10 +843,19 @@
       var html='';
       if(up.length) html+='<div class="ev-group">Upcoming</div>'+up.map(rowHtml).join("");
       if(pastEvs.length) html+='<div class="ev-group">Past — tap ⧉ to reuse</div>'+pastEvs.map(rowHtml).join("");
+      if(guests.length) html+='<div class="ev-group">You’re on these — added by others</div>'+guests.map(guestRow).join("");
       el.innerHTML=html;
       Array.prototype.forEach.call(el.querySelectorAll("[data-edit]"), function(b){ b.onclick=function(){ openEditor(byId(b.getAttribute("data-edit"))); }; });
       Array.prototype.forEach.call(el.querySelectorAll("[data-copy-ev]"), function(b){ b.onclick=function(){ openEditor(byId(b.getAttribute("data-copy-ev")), true); }; });
       Array.prototype.forEach.call(el.querySelectorAll("[data-del]"), function(b){ b.onclick=function(){ delEvent(b.getAttribute("data-del")); }; });
+      Array.prototype.forEach.call(el.querySelectorAll("[data-leave]"), function(b){ b.onclick=function(){ leaveShow(b.getAttribute("data-leave")); }; });
+    });
+  }
+  function leaveShow(id){
+    if(!confirm("Remove this show from your page? The other artists keep it — you can be re-invited later.")) return;
+    sb.from("event_artists").delete().eq("event_id", id).eq("artist_id", STATE.artist.id).then(function(res){
+      if(res.error){ toast("Couldn't remove"); console.error(res.error); return; }
+      toast("Removed from your page"); loadEvents();
     });
   }
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
